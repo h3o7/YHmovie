@@ -444,7 +444,7 @@ export default {
     }
     
     // 获取电影评论
-    const fetchMovieComments = async (reset = false) => {
+        const fetchMovieComments = async (reset = false) => {
       if (reset) {
         commentPage.value = 1
         comments.value = []
@@ -465,19 +465,31 @@ export default {
           const newComments = response.data.rows || []
           
           // 为每条评论添加额外属性
-          newComments.forEach(comment => {
+          const commentsWithRepliesPromises = newComments.map(async comment => {
             comment.showReplies = false
             comment.replies = []
-            comment.replyCount = 0 // 将从后端获取或通过API调用获取
+            comment.replyCount = 0 
             comment.hasMoreReplies = false
             comment.replyPage = 1
             comment.loadingReplies = false
             
-            // 检查评论是否有回复
-            checkCommentReplies(comment)
+            // 立即获取评论回复数量
+            try {
+              const replyResponse = await commentsByCommentId(comment.commentId, 1, 1)
+              if (replyResponse.code === 200) {
+                comment.replyCount = replyResponse.data.total || 0
+                comment.hasMoreReplies = comment.replyCount > 0
+              }
+            } catch (error) {
+              console.error(`获取评论 ${comment.commentId} 回复数量失败:`, error)
+            }
+            
+            return comment
           })
           
-          comments.value = [...comments.value, ...newComments]
+          // 等待所有评论的回复数量获取完成
+          const commentsWithReplies = await Promise.all(commentsWithRepliesPromises)
+          comments.value = [...comments.value, ...commentsWithReplies]
           
           // 检查是否还有更多评论
           const total = response.data.total || 0
@@ -607,6 +619,8 @@ export default {
             // 如果已经显示回复，则刷新回复列表
             fetchCommentReplies(comment, true)
           }
+          // 刷新当前页面
+          fetchMovieComments()
         } else {
           throw new Error(response.msg || '回复发布失败')
         }
@@ -1345,8 +1359,8 @@ export default {
 .reply-item {
   display: flex;
   gap: 12px;
-  padding: 12px 0;
-  border-bottom: 1px solid #eee;
+  padding: 10px 0;
+  border-bottom: 1px solid #f5f5f5;
 }
 
 .reply-item:last-child {
@@ -1367,7 +1381,7 @@ export default {
   display: flex;
   justify-content: space-between;
   align-items: center;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
 
 .reply-header-left {
@@ -1406,7 +1420,7 @@ export default {
 .reply-text {
   font-size: 14px;
   line-height: 1.6;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
   word-break: break-word;
 }
 

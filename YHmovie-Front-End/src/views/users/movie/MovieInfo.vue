@@ -407,7 +407,6 @@ export default {
     
     const fetchMovieDetail = async (movieId) => {
       try {
-        // 移除不正确的解构
         const movieResponse = await movieDetailById(movieId)
         console.log('电影详情响应:', movieResponse)
         
@@ -427,7 +426,6 @@ export default {
     
     const fetchMovieActors = async (movieId) => {
       try {
-        // 同样修正解构
         const actorsResponse = await movieActors(movieId)
         console.log('演员列表响应:', actorsResponse)
         
@@ -444,7 +442,7 @@ export default {
     }
     
     // 获取电影评论
-        const fetchMovieComments = async (reset = false) => {
+    const fetchMovieComments = async (reset = false) => {
       if (reset) {
         commentPage.value = 1
         comments.value = []
@@ -509,8 +507,6 @@ export default {
       }
     }
     
-    // 检查评论是否有回复（获取回复数量）
-        
     const checkCommentReplies = async (comment) => {
       if (!comment) return Promise.resolve()
       
@@ -537,7 +533,6 @@ export default {
     // 加载更多评论
     const loadMoreComments = () => {
       fetchMovieComments()
-      // fetchCommentReplies(comment, true)
     }
     
     // 提交新评论
@@ -590,7 +585,7 @@ export default {
       replyComment.value = ''
     }
     
-    // 提交回复
+    // 提交回复 - 已修复：现在只刷新当前评论的回复列表
     const submitReply = async (comment) => {
       if (!replyComment.value.trim() || !movieDetail.value) return
       
@@ -609,16 +604,14 @@ export default {
           ElMessage.success('回复发布成功')
           cancelReply()
           
-          // 更新回复数
-          comment.replyCount = (comment.replyCount || 0) + 1
+          // 1. 强制展开回复列表
+          comment.showReplies = true
           
-          // 自动加载该评论的回复
-          if (!comment.showReplies) {
-            toggleReplies(comment)
-          } else {
-            // 如果已经显示回复，则刷新回复列表
-            fetchCommentReplies(comment, true)
-          }
+          // 2. 重新加载该评论的回复列表（重置为第一页，确保看到最新回复）
+          await fetchCommentReplies(comment, true)
+          
+          // 移除：fetchMovieComments() 
+          // 解释：不要调用 fetchMovieComments()，因为它会重置所有评论的 showReplies 状态，导致刚展开的回复列表被关掉。
         } else {
           throw new Error(response.msg || '回复发布失败')
         }
@@ -839,6 +832,7 @@ export default {
 </script>
 
 <style scoped>
+/* 样式保持不变 */
 .movie-info-container {
   background-color: #f5f5f5;
   min-height: 100vh;
