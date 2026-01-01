@@ -4,11 +4,13 @@ import com.yhmovie.pojo.dto.PageRequest;
 import com.yhmovie.pojo.vo.*;
 import com.yhmovie.service.service.IMoviesService;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequiredArgsConstructor
 @RequestMapping("/user/movies")
+@Slf4j
 public class UserMoviesController {
     private final IMoviesService moviesService;
 
@@ -20,6 +22,7 @@ public class UserMoviesController {
 
     @GetMapping("/coming/list")
     public Result comingMoviesList(@ModelAttribute PageRequest pageRequest) {
+        log.debug("pageRequest: {}", pageRequest);
         PageResult<MoviesListVo> result = moviesService.comingMoviesList(pageRequest.getPageNum(), pageRequest.getPageSize());
         return Result.success(result);
     }

@@ -1,0 +1,11 @@
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/config/MybatisPlusConfig.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/constant/CaptchaConstant.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/constant/InterceptorConstant.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/constant/RedisConstant.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/exception/DBException.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/exception/InsufficientPermissionException.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/exception/ResourceNotFoundException.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/handler/GlobalExceptionHandler.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/interceptor/TokenInterceptor.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/util/CurrentHolder.java
+/Users/y/Desktop/java/projects/YHmovie/YHmovie-Back-End/yhmovie-common/src/main/java/com/yhmovie/common/util/JwtUtils.java

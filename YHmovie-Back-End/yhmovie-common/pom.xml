@@ -34,6 +34,7 @@
             <artifactId>mybatis-plus-jsqlparser-4.9</artifactId>
         </dependency>
 
+
         <!--knife4j依赖-->
         <dependency>
             <groupId>com.github.xiaoymin</groupId>
@@ -57,7 +58,6 @@
         <dependency>
             <groupId>org.springframework.boot</groupId>
             <artifactId>spring-boot-starter-test</artifactId>
-            <scope>test</scope>
         </dependency>
         <!--yhmovie-pojo-->
         <dependency>
@@ -65,15 +65,12 @@
             <artifactId>yhmovie-pojo</artifactId>
         </dependency>
 
+
+
     </dependencies>
 
-    <build>
-        <plugins>
-            <plugin>
-                <groupId>org.springframework.boot</groupId>
-                <artifactId>spring-boot-maven-plugin</artifactId>
-            </plugin>
-        </plugins>
-    </build>
+
+
+
 
 </project>

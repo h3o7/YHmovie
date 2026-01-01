@@ -58,3 +58,10 @@ knife4j:
   enable: true
   setting:
     language: zh_cn
+
+# 云服务存储的配置
+aliyun:
+  oss:
+    endpoint: https://oss-cn-beijing.aliyuncs.com
+    bucketName: y-37
+    region: cn-beijing

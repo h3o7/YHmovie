@@ -1,15 +1,17 @@
 package com.yhmovie.service;
 
+import cn.hutool.core.util.ObjectUtil;
 import com.baomidou.mybatisplus.core.conditions.query.LambdaQueryWrapper;
 import com.yhmovie.pojo.dto.ShowtimesDto;
 import com.yhmovie.pojo.entity.Cinemas;
 import com.yhmovie.pojo.entity.MovieHalls;
 import com.yhmovie.pojo.entity.Movies;
-import com.yhmovie.service.mapper.CinemaHallSeatsMapper;
+import com.yhmovie.pojo.entity.Users;
 import com.yhmovie.service.mapper.CinemasMapper;
 import com.yhmovie.service.mapper.MovieHallsMapper;
 import com.yhmovie.service.mapper.MoviesMapper;
 import com.yhmovie.service.service.IShowtimesService;
+import lombok.extern.slf4j.Slf4j;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
@@ -21,8 +23,9 @@ import java.util.Random;
 import java.util.List;
 
 @SpringBootTest
+@Slf4j(topic = "newTests")
 public class GenerateShowtimesData {
-    private final String CITY_ID = "500100"; // 重庆市
+    private final String CITY_ID = "510100"; // 成都市
     private final Long INTERVAL_TIME_MINUTES = 150L; // 每场电影间隔150分钟
     private final LocalDateTime NOW_UPPER_TWO = LocalDateTime.now().plusHours(2); // 当前时间向后推2小时
 
@@ -66,6 +69,17 @@ public class GenerateShowtimesData {
             });
         });
 
+    }
+
+    @Test
+    void test(){
+        Users user = null;
+        log.error("返回了类型为{}", ObjectUtil.isEmpty(user));
+        if(ObjectUtil.isEmpty(user)){
+            log.error("用户不存在");
+        }else{
+            log.error("用户存在");
+        }
     }
 
 }

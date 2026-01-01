@@ -19,6 +19,7 @@ import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
@@ -40,6 +41,7 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
     private final SeatsMapper seatsMapper;
     private final ShowtimeExistsMapper showtimeExistsMapper;
     private final CinemasMapper cinemasMapper;
+    private final MoviesMapper moviesMapper;
 
 
     @Override
@@ -162,7 +164,45 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
 
 
 
-    // 管理端接口逻辑的实现
+
+    @Override
+    @Transactional(rollbackFor = Exception.class)
+    public Result generateShowtimesData(String cityId) {
+        String CITY_ID = cityId;
+        Long INTERVAL_TIME_MINUTES = 150L;
+        LocalDateTime NOW_UPPER_TWO = LocalDateTime.now().plusHours(2);
+        // 1、查询该城市的所有影院
+        List<String> cinemaIds = cinemasMapper.selectList(new LambdaQueryWrapper<>(Cinemas.class).eq(Cinemas::getCityId, CITY_ID))
+                .stream().map(Cinemas::getCinemaId).toList();
+        if(cinemaIds.isEmpty()){
+            return Result.error("该城市暂无影院，无法生成电影场次数据");
+        }
+        // 2、查询所有电影
+        List<String> movieIds = moviesMapper.selectList(null).stream().map(Movies::getMovieId).toList();
+        // 3、查询所有影厅
+        List<String> movieHallIds = movieHallsMapper.selectList(null).stream().map(MovieHalls::getMovieHallId).toList();
+        List<String> newMovieHallIds = movieHallIds.subList(0, new Random().nextInt(movieHallIds.size()));
+
+
+        cinemaIds.forEach(cinemaId -> {
+            newMovieHallIds.forEach(movieHallId -> {
+                LocalDateTime endTime = NOW_UPPER_TWO.plusDays(3);
+                LocalDateTime startTime = NOW_UPPER_TWO;
+                while(startTime.isBefore(endTime)){
+                    // 随机选择一部电影
+                    String movieId = movieIds.get(new Random().nextInt(movieIds.size()));
+                    // 随机生成票价 30-100
+                    double price = 30 + (100 - 30) * new Random().nextDouble();
+                    price = Math.round(price * 100.0) / 100.0; // 保留两位小数
+                    ShowtimesDto showtimesDto = new ShowtimesDto(movieId, cinemaId, startTime.toLocalDate(), startTime.toLocalTime(), BigDecimal.valueOf(price), movieHallId);
+                    addMovieShowtimes(showtimesDto);
+                    // 计算下一场电影的开始时间
+                    startTime = startTime.plusMinutes(INTERVAL_TIME_MINUTES);
+                }
+            });
+        });
+        return Result.success("生成数据成功");
+    }
 
     @Override
     @Transactional(rollbackFor = Exception.class)

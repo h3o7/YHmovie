@@ -33,4 +33,7 @@ public interface IShowtimesService extends IService<Showtimes> {
     Result deleteMovieShowtimes();
 
     Result addMovieShowtimes(ShowtimesDto showtimesDto);
+
+    Result generateShowtimesData(String cityId);
+
 }

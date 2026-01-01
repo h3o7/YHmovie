@@ -6,7 +6,7 @@ import java.time.LocalDate;
 
 @Data
 public class UsersDto {
-    private String userId;
+    private String userId;  // 账号
 
     private String userName;
     // 用户的签名
@@ -19,4 +19,10 @@ public class UsersDto {
     private LocalDate userBirthDate;
 
     private String userAvatarUrl;
+
+    // 用于用户登录的字段
+    private String userPassword;
+    private String confirmPassword;
+
+
 }

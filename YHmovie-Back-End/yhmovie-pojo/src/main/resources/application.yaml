@@ -1,1 +1,3 @@
-spring.application.name=yhmovie-pojo
+spring:
+  application:
+    name: yhmovie-pojo

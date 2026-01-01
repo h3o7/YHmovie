@@ -1,5 +1,6 @@
 package com.yhmovie.service.service;
 
+import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.extension.service.IService;
 import com.yhmovie.pojo.dto.LoginDto;
 import com.yhmovie.pojo.dto.PageRequest;
@@ -23,7 +24,7 @@ public interface IUsersService extends IService<Users> {
 
     Result loginUser(LoginDto loginDto);
 
-    Result updateUser(UsersDto userDto);
+    Result updateUser(UsersDto userDto) throws ClientException;
 
     Result freeze(String userId);
 
@@ -32,4 +33,7 @@ public interface IUsersService extends IService<Users> {
     PageResult<UsersVo> listUsers(PageRequest pageRequest);
 
     Result deleteUser(String userId);
+
+    Result register(UsersDto userDto);
+
 }

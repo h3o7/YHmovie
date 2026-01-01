@@ -105,7 +105,7 @@ public class CommentsServiceImpl extends ServiceImpl<CommentsMapper, Comments> i
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result likeComment(String commentId) {
+    public synchronized Result likeComment(String commentId) {
         String userId = CurrentHolder.getCurrentId();
         String key = USER_LIKE_COMMENTS_PREFIX + userId;
         Boolean member = stringRedisTemplate.opsForSet().isMember(key, commentId);

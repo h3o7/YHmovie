@@ -1,6 +1,9 @@
 package com.yhmovie.service.service.impl;
 
+import cn.hutool.core.bean.BeanUtil;
+import cn.hutool.core.bean.copier.CopyOptions;
 import cn.hutool.core.util.ObjectUtil;
+import com.aliyuncs.exceptions.ClientException;
 import com.baomidou.mybatisplus.extension.plugins.pagination.Page;
 import com.yhmovie.common.exception.DBException;
 import com.yhmovie.common.exception.InsufficientPermissionException;
@@ -21,13 +24,16 @@ import com.yhmovie.service.mapper.UsersMapper;
 import com.yhmovie.service.service.IAdminsService;
 import com.yhmovie.service.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yhmovie.service.utils.AliyunOSSOperator;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
+import java.time.LocalDateTime;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -46,9 +52,11 @@ import static com.yhmovie.common.constant.RedisConstant.CAPTCHA_KEY_PREFIX;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "UsersServiceImpl")
 public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements IUsersService {
     private final StringRedisTemplate redisTemplate;
     private final AdminsMapper adminsMapper;
+    private final AliyunOSSOperator aliyunOSSOperator;
 
     @Override
     public UsersVo getUserInfoById(String userId) {
@@ -87,19 +95,22 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     @Transactional(rollbackFor = Exception.class)
-    public Result updateUser(UsersDto userDto) {
+    public Result updateUser(UsersDto userDto) throws ClientException {
         String currentId = CurrentHolder.getCurrentId();
         if(! currentId.equals(userDto.getUserId())) throw new InsufficientPermissionException("权限不足");
         Users user = baseMapper.selectById(userDto.getUserId());
         if(ObjectUtil.isEmpty(user)) return Result.error("用户不存在");
 
-        // 只传递非null值
-        if(ObjectUtil.isNotEmpty(userDto.getUserName())) user.setUserName(userDto.getUserName());
-        if(ObjectUtil.isNotEmpty(userDto.getUserSignature())) user.setUserSignature(userDto.getUserSignature());
-        if(ObjectUtil.isNotEmpty(userDto.getUserPhone())) user.setUserPhone(userDto.getUserPhone());
-        if(ObjectUtil.isNotEmpty(userDto.getUserGender())) user.setUserGender(userDto.getUserGender());
-        if(ObjectUtil.isNotEmpty(userDto.getUserBirthDate())) user.setUserBirthDate(userDto.getUserBirthDate());
-        if(ObjectUtil.isNotEmpty(userDto.getUserAvatarUrl())) user.setUserAvatarUrl(userDto.getUserAvatarUrl());
+        // 删除OSS中的旧头像
+        String userAvatarUrl = userDto.getUserAvatarUrl();
+        if(userAvatarUrl != null && !userAvatarUrl.isEmpty()) {
+            if(! userAvatarUrl.equals(user.getUserAvatarUrl()) && user.getUserAvatarUrl() != null && !user.getUserAvatarUrl().isEmpty()) {
+                aliyunOSSOperator.deleteFile(user.getUserAvatarUrl());
+            }
+        }
+        // 传递参数信息
+        BeanUtil.copyProperties(userDto, user, CopyOptions.create().setIgnoreNullValue(true).setIgnoreProperties("userPassword"));
+
         int update = baseMapper.updateById(user);
         if(update == 0) return Result.error("用户信息更新失败");
         return Result.success("用户信息更新成功");
@@ -154,5 +165,29 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         boolean b = removeById(userId);
         if(! b) throw new DBException("用户删除失败");
         return Result.success("用户删除成功");
+    }
+
+    @Override
+    public Result register(UsersDto userDto) {
+        Users users = baseMapper.selectById(userDto.getUserId());
+        if(! ObjectUtil.isEmpty(users)){
+            return Result.error("用户已存在,请重新输入账号");
+        }
+        log.info("step1");
+        if(userDto.getUserPassword().length() < 6){
+            return Result.error("密码长度不能少于6位");
+        }
+        if(userDto.getUserName().length() < 3){
+            return Result.error("用户名长度不能少于4位");
+        }
+        if(! userDto.getUserPassword().equals(userDto.getConfirmPassword())){
+            return Result.error("两次输入的密码不一致");
+        }
+        Users user = new Users();
+        BeanUtils.copyProperties(userDto, user);
+        user.setCreateTime(LocalDateTime.now());
+        int insert = baseMapper.insert(user);
+        if(insert == 0) return Result.error("用户注册失败");
+        return Result.success("用户注册成功");
     }
 }

@@ -25,7 +25,10 @@ public class WebConfig implements WebMvcConfigurer {
                         "/v3/api-docs/**",
                         "/favicon.ico",
 
-                        "/login/**"
+                        "/login/**",
+                        "/upload/**",
+                        "/user/users/register",
+                        "/admin/showtimes/clean-data"
                 );
     }
 }

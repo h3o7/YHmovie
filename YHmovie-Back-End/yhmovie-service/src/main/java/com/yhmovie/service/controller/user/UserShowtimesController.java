@@ -37,6 +37,10 @@ public class UserShowtimesController {
         return Result.success(showtimesVo);
     }
 
+    @PostMapping("/generate-data/{cityId}")
+    public Result generateShowtimesData(@PathVariable String cityId) {
+        return showtimesService.generateShowtimesData(cityId);
+    }
 
 
 }
