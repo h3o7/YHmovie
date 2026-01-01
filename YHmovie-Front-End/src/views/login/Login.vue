@@ -17,7 +17,8 @@
         <div class="logo-container">
           <div class="deer-logo">
             <svg class="deer-svg" viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" fill="none" stroke="#ffffff" stroke-width="1" />
+              <path d="M16 4h2a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2H6a2 2 0 0 1-2-2V6a2 2 0 0 1 2-2h2" fill="none"
+                stroke="#ffffff" stroke-width="1" />
               <path d="M14.5 3a1.5 1.5 0 0 1 1.5 1.5V5h-8v-.5A1.5 1.5 0 0 1 9.5 3h5z" fill="#ffffff" />
               <path d="M12 11a2 2 0 1 0 0-4 2 2 0 0 0 0 4z" fill="#ffffff" />
               <path d="M8 16v-2a4 4 0 0 1 8 0v2" fill="none" stroke="#ffffff" stroke-width="1" />
@@ -39,72 +40,49 @@
 
           <!-- 登录类型切换 -->
           <div class="login-type-switch">
-            <el-segmented 
-              v-model="loginType" 
-              :options="loginOptions"
-              size="large"
-            />
+            <el-segmented v-model="loginType" :options="loginOptions" size="large" />
           </div>
 
           <!-- 用户登录表单 -->
-          <el-form
-            v-if="loginType === 'user'"
-            ref="userFormRef"
-            :model="userForm"
-            :rules="userRules"
-            class="login-form"
-            label-position="top"
-          >
+          <el-form v-if="loginType === 'user'" ref="userFormRef" :model="userForm" :rules="userRules" class="login-form"
+            label-position="top">
             <el-form-item label="用户账号" prop="id">
-              <el-input
-                v-model="userForm.id"
-                placeholder="请输入用户账号"
-                size="large"
-                clearable
-              >
+              <el-input v-model="userForm.id" placeholder="请输入用户账号" size="large" clearable>
                 <template #prefix>
-                  <el-icon><User /></el-icon>
+                  <el-icon>
+                    <User />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
 
             <el-form-item label="密码" prop="password">
-              <el-input
-                v-model="userForm.password"
-                type="password"
-                placeholder="请输入密码"
-                size="large"
-                show-password
-                clearable
-              >
+              <el-input v-model="userForm.password" type="password" placeholder="请输入密码" size="large" show-password
+                clearable>
                 <template #prefix>
-                  <el-icon><Lock /></el-icon>
+                  <el-icon>
+                    <Lock />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
 
             <el-form-item label="验证码" prop="captchaCode">
               <div class="captcha-container">
-                <el-input
-                  v-model="userForm.captchaCode"
-                  placeholder="请输入验证码"
-                  size="large"
-                  clearable
-                  class="captcha-input"
-                >
+                <el-input v-model="userForm.captchaCode" placeholder="请输入验证码" size="large" clearable
+                  class="captcha-input">
                   <template #prefix>
-                    <el-icon><Key /></el-icon>
+                    <el-icon>
+                      <Key />
+                    </el-icon>
                   </template>
                 </el-input>
                 <div class="captcha-image" @click="refreshCaptcha">
-                  <img 
-                    v-if="captchaUrl" 
-                    :src="captchaUrl" 
-                    alt="验证码"
-                    class="captcha-img"
-                  />
+                  <img v-if="captchaUrl" :src="captchaUrl" alt="验证码" class="captcha-img" />
                   <div v-else class="captcha-placeholder">
-                    <span v-if="captchaLoading"><el-icon><Loading /></el-icon> 加载中...</span>
+                    <span v-if="captchaLoading"><el-icon>
+                        <Loading />
+                      </el-icon> 加载中...</span>
                     <span v-else>点击获取验证码</span>
                   </div>
                 </div>
@@ -113,80 +91,59 @@
 
             <div class="form-footer">
               <el-checkbox v-model="rememberMe">记住我</el-checkbox>
-              <el-link type="primary" :underline="false">忘记密码?</el-link>
+              <div class="link-group">
+                <el-link type="primary" :underline="false" @click="router.push('/register')">注册账号</el-link>
+                <span class="divider">|</span>
+                <el-link type="primary" :underline="false">忘记密码?</el-link>
+              </div>
             </div>
 
-            <el-button
-              type="primary"
-              size="large"
-              class="login-button"
-              :loading="loading"
-              @click="handleUserLogin"
-            >
+            <el-button type="primary" size="large" class="login-button" :loading="loading" @click="handleUserLogin">
               <span v-if="!loading">登录</span>
               <span v-else>登录中...</span>
             </el-button>
           </el-form>
 
           <!-- 管理员登录表单 -->
-          <el-form
-            v-else
-            ref="adminFormRef"
-            :model="adminForm"
-            :rules="adminRules"
-            class="login-form"
-            label-position="top"
-          >
+          <el-form v-else ref="adminFormRef" :model="adminForm" :rules="adminRules" class="login-form"
+            label-position="top">
             <el-form-item label="管理员账号" prop="id">
-              <el-input
-                v-model="adminForm.id"
-                placeholder="请输入管理员账号"
-                size="large"
-                clearable
-              >
+              <el-input v-model="adminForm.id" placeholder="请输入管理员账号" size="large" clearable>
                 <template #prefix>
-                  <el-icon><UserFilled /></el-icon>
+                  <el-icon>
+                    <UserFilled />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
 
             <el-form-item label="密码" prop="password">
-              <el-input
-                v-model="adminForm.password"
-                type="password"
-                placeholder="请输入密码"
-                size="large"
-                show-password
-                clearable
-              >
+              <el-input v-model="adminForm.password" type="password" placeholder="请输入密码" size="large" show-password
+                clearable>
                 <template #prefix>
-                  <el-icon><Lock /></el-icon>
+                  <el-icon>
+                    <Lock />
+                  </el-icon>
                 </template>
               </el-input>
             </el-form-item>
 
             <el-form-item label="验证码" prop="captchaCode">
               <div class="captcha-container">
-                <el-input
-                  v-model="adminForm.captchaCode"
-                  placeholder="请输入验证码"
-                  size="large"
-                  clearable
-                  class="captcha-input"
-                >
+                <el-input v-model="adminForm.captchaCode" placeholder="请输入验证码" size="large" clearable
+                  class="captcha-input">
                   <template #prefix>
-                    <el-icon><Key /></el-icon>
+                    <el-icon>
+                      <Key />
+                    </el-icon>
                   </template>
                 </el-input>
                 <div class="captcha-image" @click="refreshCaptcha">
-                  <img 
-                    v-if="captchaUrl" 
-                    :src="captchaUrl" 
-                    alt="验证码"
-                    class="captcha-img"
-                  />
+                  <img v-if="captchaUrl" :src="captchaUrl" alt="验证码" class="captcha-img" />
                   <div v-else class="captcha-placeholder">
-                    <span v-if="captchaLoading"><el-icon><Loading /></el-icon> 加载中...</span>
+                    <span v-if="captchaLoading"><el-icon>
+                        <Loading />
+                      </el-icon> 加载中...</span>
                     <span v-else>点击获取验证码</span>
                   </div>
                 </div>
@@ -198,13 +155,7 @@
               <div></div> <!-- 为了保持布局一致 -->
             </div>
 
-            <el-button
-              type="primary"
-              size="large"
-              class="login-button"
-              :loading="loading"
-              @click="handleAdminLogin"
-            >
+            <el-button type="primary" size="large" class="login-button" :loading="loading" @click="handleAdminLogin">
               <span v-if="!loading">登录</span>
               <span v-else>登录中...</span>
             </el-button>
@@ -218,13 +169,19 @@
           <!-- 快捷登录 -->
           <div class="quick-login">
             <el-button circle size="large" @click="handleQuickLogin('wechat')">
-              <el-icon><ChatDotRound /></el-icon>
+              <el-icon>
+                <ChatDotRound />
+              </el-icon>
             </el-button>
             <el-button circle size="large" @click="handleQuickLogin('phone')">
-              <el-icon><Iphone /></el-icon>
+              <el-icon>
+                <Iphone />
+              </el-icon>
             </el-button>
             <el-button circle size="large" @click="handleQuickLogin('email')">
-              <el-icon><Message /></el-icon>
+              <el-icon>
+                <Message />
+              </el-icon>
             </el-button>
           </div>
         </el-card>
@@ -241,9 +198,9 @@
 <script setup>
 import { ref, reactive, onMounted } from 'vue'
 import { ElMessage } from 'element-plus'
-import { 
-  User, 
-  UserFilled, 
+import {
+  User,
+  UserFilled,
   Lock,
   Key,
   ChatDotRound,
@@ -251,8 +208,9 @@ import {
   Message,
   Loading
 } from '@element-plus/icons-vue'
-import axios from 'axios'  // 添加这一行导入 axios
+import axios from 'axios'
 import { userLogin, adminLogin } from '@/api/login'
+import {deleteShowtimes} from '@/api/showtimes'
 import { useRouter } from 'vue-router'
 
 const router = useRouter()
@@ -328,28 +286,38 @@ const adminRules = reactive({
 // 用户登录处理
 const handleUserLogin = async () => {
   if (!userFormRef.value) return
-  
+
   // 确保验证码ID设置到表单中
   userForm.value.captchaId = captchaId.value
-  
+
   try {
     const valid = await userFormRef.value.validate()
     if (valid) {
       loading.value = true
       console.log('提交的登录表单数据:', userForm.value)
       const response = await userLogin(userForm.value)
-      
+
       // 存储登录信息到localStorage
-      console.log('登录响应数据:', response.data)
-      localStorage.setItem('login', JSON.stringify(response.data))
-      console.log('存储到localStorage的登录数据:', localStorage.getItem('login'))
-      ElMessage({
-        type: 'success',
-        message: '登录成功！'
-      })
-      
-      // 跳转到用户页面
-      await router.push('/users')
+      if (response.code == 200) {
+        console.log('登录响应数据:', response.data)
+        localStorage.setItem('login', JSON.stringify(response.data))
+        console.log('存储到localStorage的登录数据:', localStorage.getItem('login'))
+        ElMessage({
+          type: 'success',
+          message: '登录成功！'
+        })
+
+        // 跳转到用户页面
+        await router.push('/users')
+      } else {
+        ElMessage({
+          type: 'error',
+          message: response.msg || '登录失败，请检查账号密码'
+        })
+
+        // 登录失败时刷新验证码
+        refreshCaptcha()
+      }
     }
   } catch (error) {
     console.error('用户登录失败:', error)
@@ -357,7 +325,7 @@ const handleUserLogin = async () => {
       type: 'error',
       message: error.response?.data?.message || '登录失败，请检查账号密码'
     })
-    
+
     // 登录失败时刷新验证码
     refreshCaptcha()
   } finally {
@@ -368,25 +336,25 @@ const handleUserLogin = async () => {
 // 管理员登录处理
 const handleAdminLogin = async () => {
   if (!adminFormRef.value) return
-  
+
   // 确保验证码ID设置到表单中
   adminForm.value.captchaId = captchaId.value
-  
+
   try {
     const valid = await adminFormRef.value.validate()
     if (valid) {
       loading.value = true
       console.log('提交的管理员登录表单数据:', adminForm.value)
       const response = await adminLogin(adminForm.value)
-      
+
       // 存储登录信息到localStorage
       localStorage.setItem('login', JSON.stringify(response.data))
-      
+
       ElMessage({
         type: 'success',
         message: '管理员登录成功！'
       })
-      
+
       // 跳转到管理员页面
       await router.push('/admins')
     }
@@ -396,7 +364,7 @@ const handleAdminLogin = async () => {
       type: 'error',
       message: error.response?.data?.message || '登录失败，请检查账号密码'
     })
-    
+
     // 登录失败时刷新验证码
     refreshCaptcha()
   } finally {
@@ -409,45 +377,41 @@ const handleAdminLogin = async () => {
 const refreshCaptcha = async () => {
   try {
     captchaLoading.value = true
-    
+
     // 释放之前的验证码图片URL
     if (captchaUrl.value) {
       URL.revokeObjectURL(captchaUrl.value)
       captchaUrl.value = ''
     }
-    
+
     const response = await axios({
       url: '/api/login/captcha',
       method: 'get',
       responseType: 'blob'
     })
-    console.log('验证码响应头:', response.headers)
-    
+
     // 从响应头获取验证码ID
     const newCaptchaId = response.headers['captcha-id']
-    console.log('获取到的验证码ID:', newCaptchaId)
-    
+
     if (!newCaptchaId) {
       throw new Error('无法从响应头中获取验证码ID')
     }
-    
+
     // 保存验证码ID到全局变量
     captchaId.value = newCaptchaId
-    
+
     // 检查响应数据是否为Blob
     if (response.data instanceof Blob) {
       // 创建图片URL
       const blob = new Blob([response.data], { type: 'image/png' })
       const imageUrl = URL.createObjectURL(blob)
       captchaUrl.value = imageUrl
-      
-      // 重要：直接更新当前激活的表单中的captchaId
+
+      // 更新当前激活的表单中的captchaId
       if (loginType.value === 'user') {
         userForm.value.captchaId = newCaptchaId
-        console.log('已更新用户表单验证码ID:', newCaptchaId)
       } else {
         adminForm.value.captchaId = newCaptchaId
-        console.log('已更新管理员表单验证码ID:', newCaptchaId)
       }
     } else {
       throw new Error('验证码响应格式不正确')
@@ -474,6 +438,7 @@ const handleQuickLogin = (type) => {
 // 页面加载时自动获取验证码
 onMounted(() => {
   refreshCaptcha()
+  deleteShowtimes()
 })
 </script>
 
@@ -531,9 +496,12 @@ onMounted(() => {
 }
 
 @keyframes float {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px) rotate(0deg);
   }
+
   50% {
     transform: translateY(-20px) rotate(180deg);
   }
@@ -554,28 +522,62 @@ onMounted(() => {
   animation: floatUp 8s linear infinite;
 }
 
-.float-element:nth-child(1) { left: 10%; animation-delay: 0s; }
-.float-element:nth-child(2) { left: 20%; animation-delay: -1s; }
-.float-element:nth-child(3) { left: 30%; animation-delay: -2s; }
-.float-element:nth-child(4) { left: 40%; animation-delay: -3s; }
-.float-element:nth-child(5) { left: 50%; animation-delay: -4s; }
-.float-element:nth-child(6) { left: 60%; animation-delay: -5s; }
-.float-element:nth-child(7) { left: 70%; animation-delay: -6s; }
-.float-element:nth-child(8) { left: 80%; animation-delay: -7s; }
+.float-element:nth-child(1) {
+  left: 10%;
+  animation-delay: 0s;
+}
+
+.float-element:nth-child(2) {
+  left: 20%;
+  animation-delay: -1s;
+}
+
+.float-element:nth-child(3) {
+  left: 30%;
+  animation-delay: -2s;
+}
+
+.float-element:nth-child(4) {
+  left: 40%;
+  animation-delay: -3s;
+}
+
+.float-element:nth-child(5) {
+  left: 50%;
+  animation-delay: -4s;
+}
+
+.float-element:nth-child(6) {
+  left: 60%;
+  animation-delay: -5s;
+}
+
+.float-element:nth-child(7) {
+  left: 70%;
+  animation-delay: -6s;
+}
+
+.float-element:nth-child(8) {
+  left: 80%;
+  animation-delay: -7s;
+}
 
 @keyframes floatUp {
   0% {
     transform: translateY(100vh) scale(0);
     opacity: 0;
   }
+
   10% {
     opacity: 1;
     transform: scale(1);
   }
+
   90% {
     opacity: 1;
     transform: scale(1);
   }
+
   100% {
     transform: translateY(-100px) scale(0);
     opacity: 0;
@@ -613,9 +615,12 @@ onMounted(() => {
 }
 
 @keyframes logoFloat {
-  0%, 100% {
+
+  0%,
+  100% {
     transform: translateY(0px);
   }
+
   50% {
     transform: translateY(-10px);
   }
@@ -696,6 +701,16 @@ onMounted(() => {
   justify-content: space-between;
   align-items: center;
   margin-bottom: 24px;
+}
+
+.link-group {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+.divider {
+  color: #dcdfe6;
 }
 
 .login-button {
@@ -797,6 +812,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(-30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -808,6 +824,7 @@ onMounted(() => {
     opacity: 0;
     transform: translateY(30px);
   }
+
   to {
     opacity: 1;
     transform: translateY(0);
@@ -818,6 +835,7 @@ onMounted(() => {
   from {
     opacity: 0;
   }
+
   to {
     opacity: 1;
   }
@@ -829,15 +847,15 @@ onMounted(() => {
     max-width: 100%;
     padding: 16px;
   }
-  
+
   .login-form-card .el-card__body {
     padding: 24px;
   }
-  
+
   .system-title {
     font-size: 24px;
   }
-  
+
   .deer-svg {
     width: 80px;
     height: 80px;

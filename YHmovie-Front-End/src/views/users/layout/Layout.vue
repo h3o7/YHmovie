@@ -216,7 +216,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage } from 'element-plus'
+import { ElMessage, ElMessageBox } from 'element-plus'
 import {
   VideoPlay,
   ArrowDown,
@@ -228,6 +228,7 @@ import {
   Loading
 } from '@element-plus/icons-vue'
 import { getUser } from '@/api/users'
+import { generateShowtimes } from '@/api/showtimes'
 import { provincesList, citiesList, searchCities } from '@/api/login'
 
 const router = useRouter()
@@ -255,7 +256,7 @@ const cityPopoverVisible = ref(false)
 const provinces = ref([])
 const cities = ref([])
 const selectedProvinceId = ref('')
-const currentCity = ref('重庆')
+const currentCity = ref('重庆市')
 const currentCityId = ref('500100') // 默认重庆
 const loading = ref(false)
 const citySearchQuery = ref('')
@@ -264,16 +265,16 @@ const showSearchResults = ref(false)
 
 // 热门城市列表
 const hotCities = ref([
-  { cityId: '110100', cityName: '北京' },
-  { cityId: '310100', cityName: '上海' },
-  { cityId: '440100', cityName: '广州' },
-  { cityId: '440300', cityName: '深圳' },
-  { cityId: '330100', cityName: '杭州' },
-  { cityId: '320100', cityName: '南京' },
-  { cityId: '500100', cityName: '重庆' },
-  { cityId: '420100', cityName: '武汉' },
-  { cityId: '510100', cityName: '成都' },
-  { cityId: '610100', cityName: '西安' }
+  { cityId: '110100', cityName: '北京市' },
+  { cityId: '310100', cityName: '上海市' },
+  { cityId: '440100', cityName: '广州市' },
+  { cityId: '440300', cityName: '深圳市' },
+  { cityId: '330100', cityName: '杭州市' },
+  { cityId: '320100', cityName: '南京市' },
+  { cityId: '500100', cityName: '重庆市' },
+  { cityId: '420100', cityName: '武汉市' },
+  { cityId: '510100', cityName: '成都市' },
+  { cityId: '610100', cityName: '西安市' }
 ])
 
 // 获取用户信息
@@ -321,7 +322,7 @@ const loadProvinces = async () => {
   } catch (error) {
     console.error('加载省份异常:', error)
     ElMessage.error('获取省份列表失败')
-  }
+  } 
 }
 
 // 加载城市列表
@@ -377,7 +378,7 @@ const selectProvince = (province) => {
 }
 
 // 选择城市
-const selectCity = (city) => {
+const selectCity = async (city) => {
   currentCity.value = city.cityName
   currentCityId.value = city.cityId
   cityPopoverVisible.value = false
@@ -388,9 +389,51 @@ const selectCity = (city) => {
     cityName: city.cityName
   }))
   
-  // 如果在电影或影院页面，需要重新加载数据
-  if (['/users/movies', '/users/cinemas'].includes(router.currentRoute.value.path)) {
-    router.go(0) // 刷新页面以加载新城市的数据
+  // 询问是否生成场次数据
+  try {
+    await ElMessageBox.confirm(
+      '是否产生场次数据?',
+      '提示',
+      {
+        confirmButtonText: '确定',
+        cancelButtonText: '取消',
+        type: 'info',
+      }
+    )
+    
+    // 用户点击确定，调用生成接口
+    try {
+      ElMessageBox.alert(
+          '数据生成预计需要2分半钟，请稍后刷新页面查看最新场次信息。',
+          '温馨提示',
+          {
+            confirmButtonText: '我知道了',
+            type: 'success',
+            callback: () => {
+               // 提示关闭后刷新页面
+               router.go(0)
+            }
+          }
+        )
+      const res = await generateShowtimes(city.cityId)
+      if (res.code === 200) {
+        ElMessage.success('场次数据生成成功')
+        // 增加生成成功后的提示
+        
+      } else {
+        ElMessage.warning(res.msg || '场次数据生成失败')
+        // 失败也刷新
+        router.go(0)
+      }
+    } catch (error) {
+      console.error('生成场次数据异常:', error)
+      ElMessage.error('请求生成场次数据失败')
+      router.go(0)
+    }
+  } catch (e) {
+    // 用户取消或关闭弹窗，不做生成操作，但仍需刷新页面以更新城市视图
+    console.log('用户取消生成场次数据')
+    router.go(0)
   }
 }
 
@@ -453,11 +496,26 @@ const initialize = () => {
       currentCityId.value = cityData.cityId
     } catch (error) {
       console.error('解析保存的城市信息失败:', error)
+      // 解析失败恢复默认
+      setDefaultCity()
     }
+  } else {
+    // 没有保存的城市，设置默认
+    setDefaultCity()
   }
   
   // 加载用户信息
   fetchUserInfo()
+}
+
+// 设置默认城市
+const setDefaultCity = () => {
+  currentCity.value = '重庆市'
+  currentCityId.value = '500100'
+  localStorage.setItem('currentCity', JSON.stringify({
+    cityId: '500100',
+    cityName: '重庆市'
+  }))
 }
 
 // 监听城市搜索输入框变化

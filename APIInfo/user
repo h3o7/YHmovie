@@ -1,0 +1,920 @@
+首页需要展示的信息
+	电影（封面，名字，评分），分为正在上映和即将上映
+	右侧：票房排行榜和评分排行榜，第一部需要展示的内容跟上面电影需要展示的内容一致，其余只有名字和相关数据
+电影展示的内容
+	电影：封面，名字，评分，票房，类型（集合），语言，时长，上映时间，剧情简介
+	演员：图片，姓名，扮演的角色
+影院：影院id,影院名称，地址，最低票价（分情况获取对应的数据）
+	票价（纯影院）：展示该影院的最低价
+	票价（电影购票）：展示该电影在该影院的最低票
+场次（根据影院id和电影id）：
+	电影id,影院id,厅号id,
+
+
+// 还需完成的用户接口
+
+
+// 用户
+1、用户订单信息接口
+
+电影模块展示的要求，一共有两个页面ShowingMovies.vue和ComingMovies.vue,每行展示五部影片（并且分页展示，每页展示三行或者四行（根据美观来判定））
+所涉及的接口为（export const showingMovies = () => request.get('/user/movies/showing/list')
+// 即将上映电影
+export const comingMovies = () => request.get('/user/movies/coming/list')）
+请根据要求来设计该页面
+
+
+影院展示的效果如下
+当该页面有参数时即（/users/cinemas?movieId=1416590），展示的效果为顶部展示该电影的各种信息，下面展示获取到的影院信息
+当该页面无参数时（/users/cinemas），只展示影院信息
+所设计的接口如下（export const cinemasListByCityId = (cityId,pageNum,pageSize) => request.get(`/cinemas/list/${cityId}?pageNum=${pageNum}&pageSize=${pageSize}`)
+export const cinemasListByCityIdAndMovieId = (cityId, movieId,pageNum,pageSize) => request.get(`/cinemas/list/${cityId}/${movieId}?pageNum=${pageNum}&pageSize=${pageSize}`)）from '@/api/cinemas'
+(export const movieDetail = (movieId) => request.get(`/user/movies/detail/${movieId}`)) from '@/api/movies'
+cityId来自localStorage(currentCity   {"cityId":"330100","cityName":"杭州市"})
+后端响应的效果如下（{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "total": 3,
+    "rows": [
+      {
+        "cinemaId": "CNI103",
+        "cinemaName": "红星太平洋影城(杭州余杭店)",
+        "cinemaAddress": "杭州市余杭区临平街道世纪大道1398号余杭万达广场4层",
+        "cinemaPhone": "0571-88672358",
+        "lowestPrice": 80.97
+      },
+      {
+        "cinemaId": "CNI105",
+        "cinemaName": "太平洋影城(杭州建德店)",
+        "cinemaAddress": "杭州市建德市新安江街道新安东路777号建德万达广场3层",
+        "cinemaPhone": "0571-64962851",
+        "lowestPrice": 100.22
+      },
+      {
+        "cinemaId": "CNI108",
+        "cinemaName": "完美世界影城(杭州西湖区店)",
+        "cinemaAddress": "杭州市西湖区文三路90号东部软件园4层",
+        "cinemaPhone": "0571-88396285",
+        "lowestPrice": 53.51
+      }
+    ]
+  }
+}，
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "movieId": "MI1",
+    "moviePosterUrl": "https://p0.pipi.cn/mediaplus/friday_image_fe/0fa334bfd8ab8115d58dd4d5e0c83aa093b06.jpg?imageView2/1/w/464/h/644",
+    "movieName": "浪浪山小妖怪",
+    "movieDuration": 120,
+    "movieRating": 9.7,
+    "movieDescription": "年度黑马！爆款IP高口碑佳作！上海美术电影制片厂再创国风美学新经典！小孩收获快乐，大人深度共鸣，高燃治愈并存，和小妖怪一起找回勇敢出发的勇气！ 没有通天本领也能踏上取经路？小猪妖决定离开浪浪山，和蛤蟆精、黄鼠狼精、猩猩怪组团取经。西行路上，小妖怪们将遇到怎样的考验？最终他们又能否实现心愿，活成自己喜欢的样子？",
+    "movieCountry": "中国",
+    "movieLanguage": "中文",
+    "movieBoxOffice": 1601000238.67,
+    "movieReleaseDate": "2025-10-09",
+    "movieTypes": [
+      "悬疑",
+      "喜剧",
+      "游戏节目",
+      "动画",
+      "剧情",
+      "喜剧",
+      "剧情"
+    ]
+  }
+}
+）
+展示的效果可以借鉴maoyan.com
+请根据要求完善相关页面
+	
+
+
+电影详情页，根据路径获取movieId(user/movieInfo/movieId)
+获取电影信息的接口为（export const movieDetailById = (movieId) => request.get(`/user/movies/detail/${movieId}`)
+
+export const movieActors = (movieId) => request.get(`/user/movies/detail/actors/${movieId}`)）from '@/api/movies'
+点击购票跳转到/users/cinemas?movieId=${movieId}
+后端传递的数据如下（
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "movieId": "MI1",
+    "moviePosterUrl": "https://p0.pipi.cn/mediaplus/friday_image_fe/0fa334bfd8ab8115d58dd4d5e0c83aa093b06.jpg?imageView2/1/w/464/h/644",
+    "movieName": "浪浪山小妖怪",
+    "movieDuration": 120,
+    "movieRating": 9.7,
+    "movieDescription": "年度黑马！爆款IP高口碑佳作！上海美术电影制片厂再创国风美学新经典！小孩收获快乐，大人深度共鸣，高燃治愈并存，和小妖怪一起找回勇敢出发的勇气！ 没有通天本领也能踏上取经路？小猪妖决定离开浪浪山，和蛤蟆精、黄鼠狼精、猩猩怪组团取经。西行路上，小妖怪们将遇到怎样的考验？最终他们又能否实现心愿，活成自己喜欢的样子？",
+    "movieCountry": "中国",
+    "movieLanguage": "中文",
+    "movieBoxOffice": 1601000238.67,
+    "movieReleaseDate": "2025-10-09",
+    "movieTypes": [
+      "悬疑",
+      "喜剧",
+      "游戏节目",
+      "动画",
+      "剧情",
+      "喜剧",
+      "剧情"
+    ]
+  }
+}，
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "total": 8,
+    "rows": [
+      {
+        "actorId": "AI077",
+        "actorName": "王龙",
+        "characterName": "恋人",
+        "actorAvatarUrl": "https://example.com/actor_avatars/AI077.jpg",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI029",
+        "actorName": "陈国",
+        "characterName": "家人",
+        "actorAvatarUrl": "https://example.com/actor_avatars/AI029.jpg",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI1",
+        "actorName": "於水",
+        "characterName": "导演",
+        "actorAvatarUrl": "https://p0.pipi.cn/mediaplus/bigdata_crawler_media/0fa334bf52977e6cb477e13a3f44cc7223a7b.png?imageView2/1/w/128/h/170",
+        "movieRoleType": "导演"
+      },
+      {
+        "actorId": "AI073",
+        "actorName": "赵家",
+        "characterName": "导师",
+        "actorAvatarUrl": "https://example.com/actor_avatars/AI073.jpg",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI2",
+        "actorName": "陈子平",
+        "characterName": "小猪妖",
+        "actorAvatarUrl": "https://p0.pipi.cn/basicdata/25bfd6d77a30e13139d23cc50ad16a829b3c2.jpg?imageView2/1/w/128/h/170",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI3",
+        "actorName": "路扬",
+        "characterName": "蛤蟆精",
+        "actorAvatarUrl": "https://p0.pipi.cn/mediaplus/friday_image_fe/0fa334b7ea4ea43f67d7e4727728e117153a0.png?imageView2/1/w/128/h/170",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI4",
+        "actorName": "董汶亮",
+        "characterName": "黄鼠狼精",
+        "actorAvatarUrl": "https://p0.pipi.cn/mediaplus/bigdata_crawler_media/0fa334bf52977e6cb401e811c49c6275536b0.jpg?imageView2/1/w/128/h/170",
+        "movieRoleType": "演员"
+      },
+      {
+        "actorId": "AI5",
+        "actorName": "刘琮",
+        "characterName": "猩猩怪/弥勒",
+        "actorAvatarUrl": "https://p0.pipi.cn/basicdata/25bfd6d7537c6939dd339e3268a3fdb32f8cf.jpg?imageView2/1/w/128/h/170",
+        "movieRoleType": "演员"
+      }
+    ]
+  }
+）
+
+要求界面美观大气，不要产生隔离感 展示的效果可以借鉴maoyan.com
+
+
+请根据下面的代码（showtime.vue）修改部分逻辑，该页面的展示效果也很美观，但颜色搭配有点不对，请根据影院的页面的颜色更改颜色，逻辑完善的规则如下
+1、接口的改变（export const movieDetailById = (movieId) => request.get(`/user/movies/detail/${movieId}`)，
+export const moviesByCinemaId = (cinemaId) => request.get(`/user/movies/list/${cinemaId}`) from '@/api/movies';
+export const showtimesLeastPrice = (cinemaId, movieId) => request.get(`/user/showtimes/list-least/${cinemaId}/${movieId}`) from '@/api/showtimes'）
+2、接口参数的改变（{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "movieId": "MI1",
+    "moviePosterUrl": "https://p0.pipi.cn/mediaplus/friday_image_fe/0fa334bfd8ab8115d58dd4d5e0c83aa093b06.jpg?imageView2/1/w/464/h/644",
+    "movieName": "浪浪山小妖怪",
+    "movieDuration": 120,
+    "movieRating": 9.7,
+    "movieDescription": "年度黑马！爆款IP高口碑佳作！上海美术电影制片厂再创国风美学新经典！小孩收获快乐，大人深度共鸣，高燃治愈并存，和小妖怪一起找回勇敢出发的勇气！ 没有通天本领也能踏上取经路？小猪妖决定离开浪浪山，和蛤蟆精、黄鼠狼精、猩猩怪组团取经。西行路上，小妖怪们将遇到怎样的考验？最终他们又能否实现心愿，活成自己喜欢的样子？",
+    "movieCountry": "中国",
+    "movieLanguage": "中文",
+    "movieBoxOffice": 1601000238.67,
+    "movieReleaseDate": "2025-10-09",
+    "movieTypes": [
+      "悬疑",
+      "喜剧",
+      "游戏节目",
+      "动画",
+      "剧情",
+      "喜剧",
+      "剧情"
+    ]
+  }
+}，在该页面只需要展示海报，电影名，评分，时长，类型（两个），主演（三个））；
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "2025-10-06": [
+      {
+        "movieHallId": "MH7",
+        "showtimeShowDate": "2025-10-06",
+        "showtimeStartTime": "10:30:30",
+        "showtimeEndTime": "12:29:30",
+        "leastPrice": 37.7,
+        "movieHallNumber": 7,
+        "movieLanguage": "中文"
+      }
+    ]
+  }
+}，movieHallNumber表示是几号厅
+展示的效果可以根据maoyan.com来设计，
+代码如下（）
+请根据要求完善并优化showtime.vue
+
+现在需要设计seats.vue页面，该路由会收到如下的参数（const goToSeatSelection = (showtime) => {
+  router.push({
+    path: '/users/seats',
+    query: {
+      movieId: movieId.value,
+      cinemaId: cinemaId.value,
+      movieHallId: showtime.movieHallId,
+      showtimeShowDate: selectedDate.value, // 当前选择的日期
+      showtimeStartTime: showtime.showtimeStartTime ,// 场次开始时间
+      showtimesLeastPrice: showtime.leastPrice // 场次最低价
+    }
+  })
+})
+首先，获取座位的接口为（export const seatsList = (showtimesDto) => request.get('/user/showtimes/list-all', {
+    params: {
+        movieId: showtimesDto.movieId,
+        cinemaId: showtimesDto.cinemaId,
+        movieHallId: showtimesDto.movieHallId,
+        showtimeShowDate: showtimesDto.showtimeShowDate,
+        showtimeStartTime: showtimesDto.showtimeStartTime
+    }
+}) from '@/api/users'）,
+根据获得的座位数量进行均匀分布座位（要求座位的布局美观），座位的数量为64到199之间。(后端传递的数据如下（{
+    "code": 200,
+    "msg": "success",
+    "data": [
+        {
+            "showtimeId": "f0ec90d572f24a3db19086241bb43436",
+            "cinemaHallSeatId": "CHSI181045",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "67b51a2a87494522ac38c476c44e6101",
+            "cinemaHallSeatId": "CHSI181046",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "c812f4e72fea4a7bab1e2f053f737f94",
+            "cinemaHallSeatId": "CHSI181047",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "d46c9d193df14192a4cbb814845b86d7",
+            "cinemaHallSeatId": "CHSI181048",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "70a4c554b3a341a1bb23cfa9f54323e7",
+            "cinemaHallSeatId": "CHSI181049",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "48d5eb7dfcff428e994f1769c77e87cb",
+            "cinemaHallSeatId": "CHSI181050",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "367cdc5913e247329ff6efa0fdcfa12e",
+            "cinemaHallSeatId": "CHSI181051",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "deb7e92ff38048b6b8d5d36ee97532ce",
+            "cinemaHallSeatId": "CHSI181052",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "06410ecf87a34f71b972bfe2ea67ed1f",
+            "cinemaHallSeatId": "CHSI181053",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "026aa339c91542a489209dde3807105a",
+            "cinemaHallSeatId": "CHSI181054",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "e934259bf0624a59a9281200da97f0c9",
+            "cinemaHallSeatId": "CHSI181055",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "1排11座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "e7697564dd0a40e2ac73e9c347b80994",
+            "cinemaHallSeatId": "CHSI181056",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "336c559befef4806a74b1f3b5c4afb62",
+            "cinemaHallSeatId": "CHSI181057",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "f36c07314c7f43ccba195cd08c1f8050",
+            "cinemaHallSeatId": "CHSI181058",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "8f3a7ce55cae47ad8d6fd3378035707c",
+            "cinemaHallSeatId": "CHSI181059",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "2451a43025404fb7bacf85a9688e20bf",
+            "cinemaHallSeatId": "CHSI181060",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "0e7448da00474f26992b9322e0a51e15",
+            "cinemaHallSeatId": "CHSI181061",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "23966e61485f45efb3674873f6f908d5",
+            "cinemaHallSeatId": "CHSI181062",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "07a7c03adb954f6fadb55f36c5354613",
+            "cinemaHallSeatId": "CHSI181063",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "648bff27f07d4ca7b12170e282e877b6",
+            "cinemaHallSeatId": "CHSI181064",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "0bd2b058e15c4fc286b1c2961517504b",
+            "cinemaHallSeatId": "CHSI181065",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "0887a38adc664d44b203551cd6bdceaa",
+            "cinemaHallSeatId": "CHSI181066",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "2排11座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "51f13ddec39443b6a7111aa6d9816aea",
+            "cinemaHallSeatId": "CHSI181067",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "abcf67be552a48d9bd85fe5d59ca9bae",
+            "cinemaHallSeatId": "CHSI181068",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "744a2b7720f7466495699c31974bacef",
+            "cinemaHallSeatId": "CHSI181069",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "275c21aeba284800984d9d23ad84d9be",
+            "cinemaHallSeatId": "CHSI181070",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "920aaf71191d4d25aa1b85dec8263fef",
+            "cinemaHallSeatId": "CHSI181071",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "0fbdadb2cd604d11ac6595a43dc171cb",
+            "cinemaHallSeatId": "CHSI181072",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "a4f530ddecc84d21b6a95cdd5c62555d",
+            "cinemaHallSeatId": "CHSI181073",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "fd280aae220143c88072504f15c1ed01",
+            "cinemaHallSeatId": "CHSI181074",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "cbbbc18d5f6e4178b6bfbce4007aeaa8",
+            "cinemaHallSeatId": "CHSI181075",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "f111f35959374b2d85215916f2b7bdee",
+            "cinemaHallSeatId": "CHSI181076",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "a494c7ecbf3c41fb8bf360b806bdde74",
+            "cinemaHallSeatId": "CHSI181077",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "3排11座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "cf806d138bd340baa86ee2f685c3ffbc",
+            "cinemaHallSeatId": "CHSI181078",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "2db2912450224005bfbd555debf6084a",
+            "cinemaHallSeatId": "CHSI181079",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "ee996607ba7f45d2a4ae322842595a72",
+            "cinemaHallSeatId": "CHSI181080",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "bfebccd10d86440d921464a92acf3776",
+            "cinemaHallSeatId": "CHSI181081",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "62b885f02cad4abe800f5a204ad4578a",
+            "cinemaHallSeatId": "CHSI181082",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "7a95eefa7c294fbf808f4e3d42a6b474",
+            "cinemaHallSeatId": "CHSI181083",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "b1450901c3ab47e5abc54e258621e136",
+            "cinemaHallSeatId": "CHSI181084",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "32d8a9f285b642e3965d8a9dd463f80e",
+            "cinemaHallSeatId": "CHSI181085",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "c2317f3bbf5f4c22a6f979181886146d",
+            "cinemaHallSeatId": "CHSI181086",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "4817174a290f49889b2b32ec4a364ea4",
+            "cinemaHallSeatId": "CHSI181087",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "81c54a283a0e4f7c8b8aed1729fbda49",
+            "cinemaHallSeatId": "CHSI181088",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "4排11座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "d7c2f1ad792c412ab610372b326fb9b7",
+            "cinemaHallSeatId": "CHSI181089",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "ca4894b086e0405bbff82186ecc384a5",
+            "cinemaHallSeatId": "CHSI181090",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "cfb85f0567c140ff8b0ad2026c1bf564",
+            "cinemaHallSeatId": "CHSI181091",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "57bc33fef89c4b87a18a61a50dbd2143",
+            "cinemaHallSeatId": "CHSI181092",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "60200e52bbed4de8bb023f764753ac61",
+            "cinemaHallSeatId": "CHSI181093",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "ef452e6cccf847f08da7e8be6edc2c24",
+            "cinemaHallSeatId": "CHSI181094",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "aa9111d0849b4e12b678dc35dbf16701",
+            "cinemaHallSeatId": "CHSI181095",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "bea18a3720db4e6d93d8c249cf39409e",
+            "cinemaHallSeatId": "CHSI181096",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "3f352d8c8c164a4b89c539b3e8c51552",
+            "cinemaHallSeatId": "CHSI181097",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "13d27490613947b8bb2cf11d904b5620",
+            "cinemaHallSeatId": "CHSI181098",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "2184d6c0be774e8f98b695b20515d451",
+            "cinemaHallSeatId": "CHSI181099",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "5排11座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "2b164f6398be456ab3df850ad92091b6",
+            "cinemaHallSeatId": "CHSI181100",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排1座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "a9dcf44e83b14e02b418834dd34257fe",
+            "cinemaHallSeatId": "CHSI181101",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排2座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "e463aaefaf6844c78144ab056a005c35",
+            "cinemaHallSeatId": "CHSI181102",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排3座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "eede7c6b776b438f92ba742889e42976",
+            "cinemaHallSeatId": "CHSI181103",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排4座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "b0b80ccd2e4240429577f69f789f6d40",
+            "cinemaHallSeatId": "CHSI181104",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排5座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "b20769c3acbd4e13951bc02df48afccd",
+            "cinemaHallSeatId": "CHSI181105",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排6座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "48bce32cd43e48ffb9f1dfb09b1d4ebd",
+            "cinemaHallSeatId": "CHSI181106",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排7座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "0842b70a18104bfa822ed973c6ed5e36",
+            "cinemaHallSeatId": "CHSI181107",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排8座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "922bd4984964478086ec109519420471",
+            "cinemaHallSeatId": "CHSI181108",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排9座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "b184b2fd7ab341598894eaf12ef52cf3",
+            "cinemaHallSeatId": "CHSI181109",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排10座",
+            "soldStatus": false
+        },
+        {
+            "showtimeId": "d03937b7c1944f82a75d1976e921d52d",
+            "cinemaHallSeatId": "CHSI181110",
+            "showtimeTicketPrice": 37.70,
+            "seatNumber": "6排11座",
+            "soldStatus": false
+        }
+    ]
+}）)，其中soldStatus的状态（true:已售出，false:未售出），
+右侧展示电影信息和票价，获取相关信息的接口为（export const showtimesInfo = (showtimesDto) => request.get('/user/showtimes/info', {
+    params: {
+        movieId: showtimesDto.movieId,
+        cinemaId: showtimesDto.cinemaId,
+        movieHallId: showtimesDto.movieHallId,
+        showtimeShowDate: showtimesDto.showtimeShowDate,
+        showtimeStartTime: showtimesDto.showtimeStartTime
+    }
+})
+后端传递的数据如下（
+{
+    "code": 200,
+    "msg": "success",
+    "data": {
+        "showtimeShowDate": "2025-10-06",
+        "showtimeStartTime": "10:30:30",
+        "showtimeEndTime": "12:29:30",
+        "showtimeTicketPrice": 37.70,
+        "moviePosterUrl": "https://img0.baidu.com/it/u=349521478,2211861948&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=667",
+        "movieName": "第二十条",
+        "movieTypes": [
+            "史诗",
+            "邪典电影"
+        ],
+        "movieDuration": 119,
+        "movieHallNumber": 7,
+        "movieLanguage": "中文"
+    }
+}）,在选择座位后，总价也会跟着改变，且会将该座位的showtimeId记录下来，在点击购票后（需要确认）
+会调用该接口（export const buyTickets = (showtimesIds) => request.post('/user/orders/buy', showtimesIds) from '@/api/orders'）
+详细布局可以根据maoyan.com来设计，请根据要求完成seats.vue页面
+
+请为下面vue页面添加评论区以及评论功能，新添加的接口有（import request from "@/utils/request";
+
+export const commentsByMovieId = (movieId, pageNum, pageSize) => request.get(`/user/comments/list/movie/${movieId}?pageNum=${pageNum}&pageSize=${pageSize}`);
+
+export const commentsByCommentId = (commentId,pageNum,pageSize) => request.get(`/user/comments/detail/${commentId}?pageNum=${pageNum}&pageSize=${pageSize}`);
+
+export const likeComment = (commentId) => request.put(`/user/comments/like/${commentId}`);
+
+export const addMovieComment = (commentsDto) => request.post('/user/comments/add/movie', commentsDto);
+
+export const addReplyComment = (commentsDto) => request.post('/user/comments/add/reply', commentsDto);） from '@/api/comments'
+评论展示的效果为滚动分页，其中喜欢的图标如果用户喜欢则用红色显示，如果没有则显示白色；
+commentsDto的属性如下（public class CommentsDto {
+    private String commentId;
+    private String repliedUserId;
+    private String commentContent;
+    private String movieId;
+}）
+后端接口的数据如下（{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "total": 3,
+    "rows": [
+      {
+        "commentId": "CI023",
+        "userId": "UI134",
+        "commentContent": "特效做得很好，值得一看",
+        "commentLikeNumber": 688,
+        "createTime": "2025-09-30T23:50:32",
+        "userName": "user张明34",
+        "userAvatarUrl": "https://example.com/avatars/UI134.jpg",
+        "likeStatus": false,
+        "repliedUserName": null
+      },
+      {
+        "commentId": "CI186",
+        "userId": "UI197",
+        "commentContent": "导演功力深厚，画面很美",
+        "commentLikeNumber": 131,
+        "createTime": "2025-09-30T23:50:32",
+        "userName": "user刘军97",
+        "userAvatarUrl": "https://example.com/avatars/UI197.jpg",
+        "likeStatus": false,
+        "repliedUserName": null
+      },
+      {
+        "commentId": "52fd779838f34a55858ee60f764a8644",
+        "userId": "UI148",
+        "commentContent": "时至今日，差不多放映期也快结束了，现在票房15.6亿，最后磨一磨16亿，也已经无关大局了。从票房上来说已经相当成功了。总成绩坐六望五，差不多能进前五吧，都是锦上添花，无关大局。和哪吒2一样我都去电影院看了，浪浪山的小朋友比例更高。 相比于b站的番剧孵化，他更应该归类于中国传统文化IP，我认为后面上映的凡人等等也好，他们应该归类于《鬼灭之刃》之类的番剧动画电影，所以现在的情况就是这类电影仍然没有市场成功的案例。 ",
+        "commentLikeNumber": 1,
+        "createTime": "2025-09-27T15:49:53",
+        "userName": "user王磊48",
+        "userAvatarUrl": "https://example.com/avatars/UI148.jpg",
+        "likeStatus": true,
+        "repliedUserName": null
+      }
+    ]
+  }
+}）
+
+
+
+
+
+
+
+
+现在需要完成搜索页面（Search.vue）页面，路由会传递一个参数（const handleSearch = () => {
+  if (!searchQuery.value.trim()) return
+  router.push({
+    path: '/users/searchs',
+    query: { search: searchQuery.value.trim() }
+  })
+  searchQuery.value = ''
+}）
+我们可以通过参数获取搜索词，所涉及的接口有（export const searchCinemas = (keyWord) => request.get(`/user/cinemas/search?keyWord=${keyWord}`) from '@/api/cinemas';
+export const searchMovies = (keyWord) => request.get(`/user/movies/search?keyWord=${keyWord}`) from '@/api/movies'）
+后端传递的数据分别如下（
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "total": 2,
+    "rows": [
+      {
+        "cinemaId": "CNI172",
+        "cinemaName": "红星太平洋影城(重庆合川店)",
+        "cinemaAddress": "重庆市合川区南津街99号合川万达广场4层",
+        "cinemaPhone": "023-42841637",
+        "lowestPrice": 30.81
+      },
+      {
+        "cinemaId": "CNI174",
+        "cinemaName": "太平洋影城(重庆江津店)",
+        "cinemaAddress": "重庆市江津区几江街道鼎山大道99号江津万达广场3层",
+        "cinemaPhone": "023-47284751",
+        "lowestPrice": 31.23
+      }
+    ]
+  }
+}
+
+{
+  "code": 200,
+  "msg": "success",
+  "data": {
+    "total": 2,
+    "rows": [
+      {
+        "movieId": "MI010",
+        "moviePosterUrl": "https://img1.baidu.com/it/u=422473059,2904811415&fm=253&fmt=auto&app=138&f=JPEG?w=500&h=700",
+        "movieName": "热烈",
+        "movieRating": 7.1,
+        "movieBoxOffice": 910000000
+      },
+      {
+        "movieId": "MI017",
+        "moviePosterUrl": "https://img2.baidu.com/it/u=3881631237,4218791433&fm=253&fmt=auto&app=138&f=JPEG?w=800&h=1723",
+        "movieName": "热辣滚烫",
+        "movieRating": 7.5,
+        "movieBoxOffice": 3420000000
+      }
+    ]
+  }
+}
+）要求顶部有一个电影和影院，点击其可以查看对应的信息，并且默认展示电影信息。
+点击电影会路由到这个页面（{
+        path: '/users/movieInfo/:movieId',
+        name: 'MovieInfo',
+        component: () => import('@/views/users/movie/MovieInfo.vue')
+      }）
+点击影院则会跳转到或者选座购票则会跳转到（{
+        path: '/users/showtimes/:cinemaId',
+        name: 'UserShowtimes',
+        component: () => import('@/views/users/showtime/Showtime.vue')
+      }）
+要求页面美观，没有隔离感。可以根据这个页面来设计展示效果（）
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+	

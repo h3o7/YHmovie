@@ -172,7 +172,7 @@ const fetchCinemasList = async () => {
         cinemasList.value.sort((a, b) => a.lowestPrice - b.lowestPrice)
       }
     } else {
-      throw new Error(response.msg || '获取影院列表失败')
+      ElMessage.error(response.msg || '获取影院列表失败')
     }
   } catch (error) {
     console.error('获取影院列表失败:', error)

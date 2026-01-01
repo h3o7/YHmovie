@@ -1,0 +1,3 @@
+电影排片(admin/showtimes/add)：
+	接受json数据：ShowtimesDto
+	

@@ -6,6 +6,9 @@ export const getCaptcha = () => request.get('/login/captcha', { responseType: 'b
 // 用户登录
 export const userLogin = (loginForm) => request.post('/login/users', loginForm)
 
+// 注册用户
+export const registerUser = (usersDto) => request.post('/user/users/register',usersDto)
+
 // 管理员登录
 export const adminLogin = (loginForm) => request.post('/login/admins', loginForm)
 
@@ -16,3 +19,5 @@ export const provincesList = () => request.get('/user/provinces/list')
 export const citiesList = (provinceId) => request.get(`/user/cities/list/${provinceId}`)
 
 export const searchCities = (cityName) => request.get(`/user/cities/search?cityName=${cityName}`)
+
+
