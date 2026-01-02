@@ -190,7 +190,7 @@ import {
   Document
 } from '@element-plus/icons-vue'
 import { ElMessage } from 'element-plus'
-import { getAdminVOInfo } from '@/api/dashboard'
+import { getAdminVOInfo } from '@/api/admins'
 
 // 响应式数据
 const adminData = ref({

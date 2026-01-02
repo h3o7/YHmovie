@@ -10,7 +10,7 @@ spring:
     active: dev
   #  配置Mysql数据库的连接信息
   datasource:
-    url: jdbc:mysql://${yhmovie.db.host}:${yhmovie.db.port}/${yhmovie.db.name}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai
+    url: jdbc:mysql://${yhmovie.db.host}:${yhmovie.db.port}/${yhmovie.db.name}?useUnicode=true&characterEncoding=UTF-8&serverTimezone=Asia/Shanghai&rewriteBatchedStatements=true
     driver-class-name: com.mysql.cj.jdbc.Driver
     username: ${yhmovie.db.username}
     password: ${yhmovie.db.password}

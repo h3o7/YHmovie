@@ -10,26 +10,6 @@ const routes = [
         path: '/admins/dashboard',
         name: 'Dashboard',
         component: () => import('@/views/admin/dashboard/Dashboard.vue')
-      },
-      {
-        path: '/admins/locations',
-        name: 'locations',
-        component: () => import('@/views/admin/location/Location.vue')
-      },
-      {
-        path: '/admins/users',
-        name: 'users',
-        component: () => import('@/views/admin/user/Users.vue')
-      },
-      {
-        path: '/admins/cinemas',
-        name: 'cinemas',
-        component: () => import('@/views/admin/cinema/Cinemas.vue')
-      },
-      {
-        path: '/admins/movies',
-        name: 'movies',
-        component: () => import('@/views/admin/movie/Movies.vue')
       }
     ]
   },

@@ -1,7 +1,0 @@
-yhmovie:
-  db:
-    host: localhost
-    port: 3307
-    name: yh_movie
-    username: root
-    password: 123456

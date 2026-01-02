@@ -15,6 +15,7 @@ import com.yhmovie.service.service.IShowtimeExistsService;
 import com.yhmovie.service.service.IShowtimesService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.BeanUtils;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -23,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.stream.Collectors;
 
 /**
  * <p>
@@ -34,6 +36,7 @@ import java.util.*;
  */
 @Service
 @RequiredArgsConstructor
+@Slf4j(topic = "ShowtimesServiceImpl")
 public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes> implements IShowtimesService {
     private final CinemaHallSeatsMapper cinemaHallSeatsMapper;
     private final IMoviesService moviesService;
@@ -168,39 +171,103 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
     @Override
     @Transactional(rollbackFor = Exception.class)
     public Result generateShowtimesData(String cityId) {
+        long start = System.currentTimeMillis();
         String CITY_ID = cityId;
         Long INTERVAL_TIME_MINUTES = 150L;
         LocalDateTime NOW_UPPER_TWO = LocalDateTime.now().plusHours(2);
-        // 1、查询该城市的所有影院
-        List<String> cinemaIds = cinemasMapper.selectList(new LambdaQueryWrapper<>(Cinemas.class).eq(Cinemas::getCityId, CITY_ID))
+
+        // 1、查询该城市的所有影院 ID
+        List<String> cinemaIds = cinemasMapper.selectList(new LambdaQueryWrapper<>(Cinemas.class)
+                        .eq(Cinemas::getCityId, CITY_ID))
                 .stream().map(Cinemas::getCinemaId).toList();
-        if(cinemaIds.isEmpty()){
+
+        if (cinemaIds.isEmpty()) {
             return Result.error("该城市暂无影院，无法生成电影场次数据");
         }
-        // 2、查询所有电影
-        List<String> movieIds = moviesMapper.selectList(null).stream().map(Movies::getMovieId).toList();
-        // 3、查询所有影厅
-        List<String> movieHallIds = movieHallsMapper.selectList(null).stream().map(MovieHalls::getMovieHallId).toList();
-        List<String> newMovieHallIds = movieHallIds.subList(0, new Random().nextInt(movieHallIds.size()));
 
+        // 2、查询所有电影，并转为 Map<MovieId, Duration>，避免循环内查库 (优化点1)
+        List<Movies> moviesList = moviesMapper.selectList(null);
+        if (moviesList.isEmpty()) return Result.error("暂无电影数据");
 
-        cinemaIds.forEach(cinemaId -> {
-            newMovieHallIds.forEach(movieHallId -> {
+        Map<String, Integer> movieDurationMap = moviesList.stream()
+                .collect(Collectors.toMap(Movies::getMovieId, Movies::getMovieDuration));
+        List<String> movieIds = new ArrayList<>(movieDurationMap.keySet());
+
+        // 3、查询所有影厅 (注意：逻辑上影厅应该属于特定影院，这里保留原逻辑，但建议优化业务逻辑)
+        List<String> allMovieHallIds = movieHallsMapper.selectList(null)
+                .stream().map(MovieHalls::getMovieHallId).toList();
+        // 随机选取一部分影厅
+        if (allMovieHallIds.isEmpty()) return Result.error("暂无影厅数据");
+        List<String> targetMovieHallIds = allMovieHallIds.subList(0, Math.max(1, new Random().nextInt(allMovieHallIds.size())));
+
+        // 准备一个大集合用于批量插入
+        List<Showtimes> batchInsertList = new ArrayList<>();
+        int BATCH_SIZE = 2000; // 每2000条插入一次 (优化点3)
+
+        for (String cinemaId : cinemaIds) {
+            for (String movieHallId : targetMovieHallIds) {
+
+                // 4、在时间循环外，获取当前影厅的所有座位 ID (优化点2)
+                List<CinemaHallSeats> seats = cinemaHallSeatsMapper.selectList(new LambdaQueryWrapper<>(CinemaHallSeats.class)
+                        .eq(CinemaHallSeats::getCinemaId, cinemaId)
+                        .eq(CinemaHallSeats::getMovieHallId, movieHallId));
+
+                if (seats.isEmpty()) continue; // 如果该厅没座位，跳过
+                List<String> seatIds = seats.stream().map(CinemaHallSeats::getCinemaHallSeatId).toList();
+
                 LocalDateTime endTime = NOW_UPPER_TWO.plusDays(3);
                 LocalDateTime startTime = NOW_UPPER_TWO;
-                while(startTime.isBefore(endTime)){
+
+                while (startTime.isBefore(endTime)) {
                     // 随机选择一部电影
                     String movieId = movieIds.get(new Random().nextInt(movieIds.size()));
-                    // 随机生成票价 30-100
+                    // 从 Map 获取时长，不查库
+                    Integer duration = movieDurationMap.get(movieId);
+
+                    // 随机生成票价
                     double price = 30 + (100 - 30) * new Random().nextDouble();
-                    price = Math.round(price * 100.0) / 100.0; // 保留两位小数
-                    ShowtimesDto showtimesDto = new ShowtimesDto(movieId, cinemaId, startTime.toLocalDate(), startTime.toLocalTime(), BigDecimal.valueOf(price), movieHallId);
-                    addMovieShowtimes(showtimesDto);
-                    // 计算下一场电影的开始时间
+                    BigDecimal finalPrice = BigDecimal.valueOf(Math.round(price * 100.0) / 100.0);
+
+                    LocalDateTime showEndTime = startTime.plusMinutes(duration != null ? duration : 120);
+                    LocalDateTime finalStartTime = startTime; // variable used in lambda should be effective final
+
+                    // 5、在内存中构建对象
+                    for (String seatId : seatIds) {
+                        Showtimes showtimes = new Showtimes();
+                        showtimes.setShowtimeId(IdUtil.simpleUUID());
+                        showtimes.setMovieId(movieId);
+                        showtimes.setCinemaId(cinemaId);
+                        showtimes.setMovieHallId(movieHallId);
+                        showtimes.setShowtimeShowDate(finalStartTime.toLocalDate());
+                        showtimes.setShowtimeStartTime(finalStartTime.toLocalTime());
+                        showtimes.setShowtimeTicketPrice(finalPrice);
+                        showtimes.setCinemaHallSeatId(seatId); // 你的设计是一场电影每个座位一条记录
+                        showtimes.setShowtimeEndTime(showEndTime.toLocalTime());
+                        showtimes.setCreateTime(LocalDateTime.now());
+                        showtimes.setUpdateTime(LocalDateTime.now());
+
+                        batchInsertList.add(showtimes);
+                    }
+
+                    // 6、达到阈值，进行批量入库并清空列表
+                    if (batchInsertList.size() >= BATCH_SIZE) {
+                        saveBatch(batchInsertList);
+                        batchInsertList.clear();
+                    }
+
+                    // 计算下一场时间
                     startTime = startTime.plusMinutes(INTERVAL_TIME_MINUTES);
                 }
-            });
-        });
+            }
+        }
+
+        // 7、处理剩余的数据
+        if (!batchInsertList.isEmpty()) {
+            saveBatch(batchInsertList);
+        }
+
+        long end = System.currentTimeMillis();
+        log.info("生成电影场次数据完成，耗时 {} 秒", end - start);
         return Result.success("生成数据成功");
     }
 

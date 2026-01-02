@@ -374,6 +374,8 @@ const handleAdminLogin = async () => {
 
 
 // 刷新验证码
+// ... existing code ...
+// 刷新验证码
 const refreshCaptcha = async () => {
   try {
     captchaLoading.value = true
@@ -389,11 +391,31 @@ const refreshCaptcha = async () => {
       method: 'get',
       responseType: 'blob'
     })
+    
+    // 处理可能返回的JSON错误（后端返回200但内容是Result对象的情况）
+    if (response.data.type === 'application/json') {
+      const text = await response.data.text()
+      const res = JSON.parse(text)
+      if (res.code !== 200) {
+        throw new Error(res.msg || '获取验证码失败')
+      }
+    }
+
+    console.log('获取到的验证码响应数据:', response)
 
     // 从响应头获取验证码ID
     const newCaptchaId = response.headers['captcha-id']
 
     if (!newCaptchaId) {
+      // 如果没有ID，尝试解析内容看是否包含错误信息
+      try {
+        const text = await response.data.text()
+        const res = JSON.parse(text)
+        if (res.msg) throw new Error(res.msg)
+      } catch (e) {
+        // 解析失败则忽略，继续抛出下面的错误
+        if (e.message && e.message !== 'Unexpected token') throw e
+      }
       throw new Error('无法从响应头中获取验证码ID')
     }
 
@@ -418,14 +440,35 @@ const refreshCaptcha = async () => {
     }
   } catch (error) {
     console.error('获取验证码失败:', error)
+    
+    let errorMsg = '获取验证码失败，请重试'
+    
+    // 优先处理后端返回的Blob类型的JSON错误信息
+    if (error.response && error.response.data instanceof Blob) {
+      try {
+        const text = await error.response.data.text()
+        const res = JSON.parse(text)
+        if (res.msg) {
+          errorMsg = res.msg
+        }
+      } catch (e) {
+        // 解析失败，保持默认错误信息
+      }
+    } else if (error.message) {
+      errorMsg = error.message
+    } else if (error.response?.data?.msg) {
+      errorMsg = error.response.data.msg
+    }
+
     ElMessage({
       type: 'error',
-      message: '获取验证码失败，请重试'
+      message: errorMsg
     })
   } finally {
     captchaLoading.value = false
   }
 }
+// ... existing code ...
 
 // 快捷登录处理
 const handleQuickLogin = (type) => {

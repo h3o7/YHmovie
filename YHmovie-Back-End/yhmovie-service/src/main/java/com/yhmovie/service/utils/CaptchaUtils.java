@@ -5,6 +5,7 @@ import cn.hutool.core.util.IdUtil;
 import cn.hutool.core.util.StrUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import lombok.RequiredArgsConstructor;
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Component;
 
@@ -16,6 +17,7 @@ import static com.yhmovie.common.constant.RedisConstant.CAPTCHA_KEY_PREFIX;
 
 @Component
 @RequiredArgsConstructor
+@Slf4j(topic = "CaptchaUtils")
 public class CaptchaUtils {
     private final StringRedisTemplate stringRedisTemplate;
 
@@ -47,6 +49,7 @@ public class CaptchaUtils {
         // 验证码验证后立即删除（一次性使用）
         stringRedisTemplate.delete(key);
         // 忽略大小写比较
+        log.info("前端验证码：{}，存储验证码：{}", code, storedCode);
         return storedCode.equalsIgnoreCase(code);
     }
 }

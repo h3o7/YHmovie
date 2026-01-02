@@ -216,7 +216,7 @@
 <script setup>
 import { ref, onMounted, watch, computed } from 'vue'
 import { useRouter } from 'vue-router'
-import { ElMessage, ElMessageBox } from 'element-plus'
+import { ElMessage, ElMessageBox, ElLoading } from 'element-plus'
 import {
   VideoPlay,
   ArrowDown,
@@ -403,7 +403,25 @@ const selectCity = async (city) => {
     
     // 用户点击确定，调用生成接口
     try {
-      ElMessageBox.alert(
+      // 开启 Loading 服务
+      const loadingInstance = ElLoading.service({
+        lock: true,
+        text: '正在请求生成数据...',
+        background: 'rgba(0, 0, 0, 0.7)',
+      })
+
+      // 请求接口
+      const res = await generateShowtimes(city.cityId)
+      
+      // 关闭 Loading
+      loadingInstance.close()
+
+      if (res.code === 200) {
+        // 成功情况
+        ElMessage.success('场次数据生成成功')
+        
+        // 显示2.5分钟等待提示
+        ElMessageBox.alert(
           '数据生成预计需要2分半钟，请稍后刷新页面查看最新场次信息。',
           '温馨提示',
           {
@@ -415,15 +433,21 @@ const selectCity = async (city) => {
             }
           }
         )
-      const res = await generateShowtimes(city.cityId)
-      if (res.code === 200) {
-        ElMessage.success('场次数据生成成功')
-        // 增加生成成功后的提示
-        
       } else {
-        ElMessage.warning(res.msg || '场次数据生成失败')
-        // 失败也刷新
-        router.go(0)
+        // 异常情况（如IP限流），显示后端返回的 msg
+        // 使用 Alert 确保用户看到错误信息后再刷新
+        ElMessageBox.alert(
+          res.msg || '场次数据生成失败',
+          '提示',
+          {
+            confirmButtonText: '确定',
+            type: 'warning',
+            callback: () => {
+              // 即使生成失败，也刷新页面以加载新选择城市的基础数据
+              router.go(0)
+            }
+          }
+        )
       }
     } catch (error) {
       console.error('生成场次数据异常:', error)

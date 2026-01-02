@@ -91,7 +91,7 @@
                 <div class="end-time">{{ calculateEndTime(showtime.showtimeStartTime, currentMovie?.movieDuration) }}散场</div>
               </div>
               <div class="language-info">
-                <span class="language">{{ showtime.movieLanguage }}2D</span>
+                <span class="language">{{ showtime.movieLanguage }}</span>
               </div>
               <div class="hall-info">
                 <span class="hall-name">{{ showtime.movieHallNumber }}号厅</span>

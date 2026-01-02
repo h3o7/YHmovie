@@ -25,6 +25,7 @@ import com.yhmovie.service.service.IAdminsService;
 import com.yhmovie.service.service.IUsersService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
 import com.yhmovie.service.utils.AliyunOSSOperator;
+import com.yhmovie.service.utils.CaptchaUtils;
 import io.jsonwebtoken.Claims;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -57,6 +58,7 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
     private final StringRedisTemplate redisTemplate;
     private final AdminsMapper adminsMapper;
     private final AliyunOSSOperator aliyunOSSOperator;
+    private final CaptchaUtils captchaUtils;
 
     @Override
     public UsersVo getUserInfoById(String userId) {
@@ -70,11 +72,9 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
 
     @Override
     public Result loginUser(LoginDto loginDto) {
-        // 校验验证码
-        String key = CAPTCHA_KEY_PREFIX + loginDto.getCaptchaId();
-        String captchaCode = redisTemplate.opsForValue().get(key);
-        if(ObjectUtil.isEmpty(captchaCode)) return Result.error("验证码已过期");
-        if (captchaCode != null && !captchaCode.equals(loginDto.getCaptchaCode())) return Result.error("验证码错误");
+        if(! captchaUtils.validateCaptcha(loginDto.getCaptchaId(), loginDto.getCaptchaCode())){
+            return Result.error("验证码错误");
+        }
         // 校验用户名密码
         Users user = baseMapper.selectById(loginDto.getId());
         if(ObjectUtil.isEmpty(user)) return Result.error("用户不存在");

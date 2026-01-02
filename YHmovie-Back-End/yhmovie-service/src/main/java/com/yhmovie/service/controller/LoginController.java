@@ -1,5 +1,6 @@
 package com.yhmovie.service.controller;
 
+import com.yhmovie.common.annotation.RateLimit;
 import com.yhmovie.pojo.dto.LoginDto;
 import com.yhmovie.pojo.vo.Result;
 import com.yhmovie.service.service.IAdminsService;
@@ -19,6 +20,7 @@ public class LoginController {
     private final IAdminsService adminsService;
     private final CaptchaUtils captchaUtils;
 
+    @RateLimit(key = "send_code", time = 60, count = 10, msg = "验证码发送太频繁，请1分钟后再试")
     @GetMapping("/captcha")
     public void generateCaptcha(HttpServletResponse response) throws IOException {
         String captchaId = captchaUtils.generateCaptcha(response);

@@ -18,6 +18,7 @@ import com.yhmovie.pojo.vo.Result;
 import com.yhmovie.service.mapper.AdminsMapper;
 import com.yhmovie.service.service.IAdminsService;
 import com.baomidou.mybatisplus.extension.service.impl.ServiceImpl;
+import com.yhmovie.service.utils.CaptchaUtils;
 import lombok.RequiredArgsConstructor;
 import org.springframework.data.redis.core.StringRedisTemplate;
 import org.springframework.stereotype.Service;
@@ -42,14 +43,14 @@ import static com.yhmovie.common.constant.RedisConstant.CAPTCHA_KEY_PREFIX;
 @RequiredArgsConstructor
 public class AdminsServiceImpl extends ServiceImpl<AdminsMapper, Admins> implements IAdminsService {
     private final StringRedisTemplate redisTemplate;
+    private final CaptchaUtils captchaUtils;
 
     @Override
     public Result loginAdmin(LoginDto loginDto) {
         // 校验验证码
-        String key = CAPTCHA_KEY_PREFIX + loginDto.getCaptchaId();
-        String captchaCode = redisTemplate.opsForValue().get(key);
-        if(ObjectUtil.isEmpty(captchaCode)) return Result.error("验证码已过期");
-        if (captchaCode != null && !captchaCode.equals(loginDto.getCaptchaCode())) return Result.error("验证码错误");
+        if(! captchaUtils.validateCaptcha(loginDto.getCaptchaId(), loginDto.getCaptchaCode())){
+            return Result.error("验证码错误");
+        }
         // 校验管理员密码
         Admins admin = baseMapper.selectById(loginDto.getId());
         if(ObjectUtil.isEmpty(admin)) return Result.error("管理员账号不存在");

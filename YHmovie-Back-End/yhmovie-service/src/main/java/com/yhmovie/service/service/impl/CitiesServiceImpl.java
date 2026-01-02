@@ -32,13 +32,12 @@ public class CitiesServiceImpl extends ServiceImpl<CitiesMapper, Cities> impleme
         List<Cities> list = baseMapper.selectList(new LambdaQueryWrapper<Cities>()
                 .eq(Cities::getProvinceId, provinceId)
                 .orderByAsc(Cities::getCityPinyinInitial));
+        String provinceName = provincesMapper.selectOne(new LambdaQueryWrapper<Provinces>()
+                        .eq(Provinces::getProvinceId, provinceId)).getProvinceName();
         List<CitiesVo> citiesVoList = new ArrayList<>();
         for (Cities cities : list) {
             CitiesVo citiesVO = new CitiesVo();
             BeanUtils.copyProperties(cities, citiesVO);
-            String provinceName = provincesMapper.selectOne(new LambdaQueryWrapper<Provinces>()
-                    .eq(Provinces::getProvinceId, cities.getProvinceId()))
-                    .getProvinceName();
             citiesVO.setProvinceName(provinceName);
             citiesVoList.add(citiesVO);
         }
