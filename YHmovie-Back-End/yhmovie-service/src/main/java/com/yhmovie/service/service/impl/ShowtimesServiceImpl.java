@@ -24,6 +24,7 @@ import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.*;
+import java.util.concurrent.CompletableFuture;
 import java.util.stream.Collectors;
 
 /**
@@ -169,14 +170,11 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
 
 
     @Override
-    @Transactional(rollbackFor = Exception.class)
+    // 1. 移除这里的 @Transactional，因为主方法只做查询且立刻返回，无需事务
     public Result generateShowtimesData(String cityId) {
-        long start = System.currentTimeMillis();
         String CITY_ID = cityId;
-        Long INTERVAL_TIME_MINUTES = 150L;
-        LocalDateTime NOW_UPPER_TWO = LocalDateTime.now().plusHours(2);
 
-        // 1、查询该城市的所有影院 ID
+        // 1、查询该城市的所有影院 ID (这是一个快速查询，可以阻塞等待)
         List<String> cinemaIds = cinemasMapper.selectList(new LambdaQueryWrapper<>(Cinemas.class)
                         .eq(Cinemas::getCityId, CITY_ID))
                 .stream().map(Cinemas::getCinemaId).toList();
@@ -185,19 +183,55 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
             return Result.error("该城市暂无影院，无法生成电影场次数据");
         }
 
-        // 2、查询所有电影，并转为 Map<MovieId, Duration>，避免循环内查库 (优化点1)
+        // 开启一个新线程在后台处理数据，主线程立刻向下执行返回结果
+        CompletableFuture.runAsync(() -> {
+            long start = System.currentTimeMillis();
+            log.info("开始后台生成场次数据，城市ID: {}", CITY_ID);
+
+            try {
+                generateDataTask(CITY_ID, cinemaIds); // 执行耗时逻辑
+                long end = System.currentTimeMillis();
+                log.info("后台生成电影场次数据完成，耗时 {} 毫秒", end - start);
+            } catch (Exception e) {
+                log.error("后台生成电影场次数据失败", e);
+                // 这里可以添加逻辑：比如发送邮件通知管理员，或者更新某个任务状态表为失败
+            }
+        });
+
+        // --- 【立即返回】 ---
+        return Result.success("生成任务已提交，后台正在处理中，请稍后查看数据");
+    }
+
+    /**
+     * 将耗时的业务逻辑抽取为独立方法
+     * 注意：由于是在异步线程中执行，这里的事务建议按批次提交，或者在这个方法上加事务（如果需要整体回滚）
+     * 考虑到数据量大，建议不加 @Transactional 大事务，而是依赖 saveBatch 的分批事务，避免长时间锁表
+     */
+    private void generateDataTask(String cityId, List<String> cinemaIds) {
+        Long INTERVAL_TIME_MINUTES = 150L;
+        LocalDateTime NOW_UPPER_TWO = LocalDateTime.now().plusHours(2);
+
+        // 2、查询所有电影，并转为 Map (优化点1)
         List<Movies> moviesList = moviesMapper.selectList(null);
-        if (moviesList.isEmpty()) return Result.error("暂无电影数据");
+        if (moviesList.isEmpty()) {
+            log.warn("暂无电影数据，停止生成");
+            return;
+        }
 
         Map<String, Integer> movieDurationMap = moviesList.stream()
                 .collect(Collectors.toMap(Movies::getMovieId, Movies::getMovieDuration));
         List<String> movieIds = new ArrayList<>(movieDurationMap.keySet());
 
-        // 3、查询所有影厅 (注意：逻辑上影厅应该属于特定影院，这里保留原逻辑，但建议优化业务逻辑)
+        // 3、查询所有影厅
         List<String> allMovieHallIds = movieHallsMapper.selectList(null)
                 .stream().map(MovieHalls::getMovieHallId).toList();
+
+        if (allMovieHallIds.isEmpty()) {
+            log.warn("暂无影厅数据，停止生成");
+            return;
+        }
+
         // 随机选取一部分影厅
-        if (allMovieHallIds.isEmpty()) return Result.error("暂无影厅数据");
         List<String> targetMovieHallIds = allMovieHallIds.subList(0, Math.max(1, new Random().nextInt(allMovieHallIds.size())));
 
         // 准备一个大集合用于批量插入
@@ -221,7 +255,6 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
                 while (startTime.isBefore(endTime)) {
                     // 随机选择一部电影
                     String movieId = movieIds.get(new Random().nextInt(movieIds.size()));
-                    // 从 Map 获取时长，不查库
                     Integer duration = movieDurationMap.get(movieId);
 
                     // 随机生成票价
@@ -229,7 +262,7 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
                     BigDecimal finalPrice = BigDecimal.valueOf(Math.round(price * 100.0) / 100.0);
 
                     LocalDateTime showEndTime = startTime.plusMinutes(duration != null ? duration : 120);
-                    LocalDateTime finalStartTime = startTime; // variable used in lambda should be effective final
+                    LocalDateTime finalStartTime = startTime;
 
                     // 5、在内存中构建对象
                     for (String seatId : seatIds) {
@@ -241,7 +274,7 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
                         showtimes.setShowtimeShowDate(finalStartTime.toLocalDate());
                         showtimes.setShowtimeStartTime(finalStartTime.toLocalTime());
                         showtimes.setShowtimeTicketPrice(finalPrice);
-                        showtimes.setCinemaHallSeatId(seatId); // 你的设计是一场电影每个座位一条记录
+                        showtimes.setCinemaHallSeatId(seatId);
                         showtimes.setShowtimeEndTime(showEndTime.toLocalTime());
                         showtimes.setCreateTime(LocalDateTime.now());
                         showtimes.setUpdateTime(LocalDateTime.now());
@@ -249,9 +282,9 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
                         batchInsertList.add(showtimes);
                     }
 
-                    // 6、达到阈值，进行批量入库并清空列表
+                    // 6、达到阈值，进行批量入库
                     if (batchInsertList.size() >= BATCH_SIZE) {
-                        saveBatch(batchInsertList);
+                        saveBatch(batchInsertList); // MyBatis-Plus 的 saveBatch 默认是分批事务
                         batchInsertList.clear();
                     }
 
@@ -265,10 +298,6 @@ public class ShowtimesServiceImpl extends ServiceImpl<ShowtimesMapper, Showtimes
         if (!batchInsertList.isEmpty()) {
             saveBatch(batchInsertList);
         }
-
-        long end = System.currentTimeMillis();
-        log.info("生成电影场次数据完成，耗时 {} 秒", end - start);
-        return Result.success("生成数据成功");
     }
 
     @Override

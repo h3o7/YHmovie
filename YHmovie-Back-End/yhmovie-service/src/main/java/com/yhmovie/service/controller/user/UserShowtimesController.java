@@ -38,7 +38,7 @@ public class UserShowtimesController {
         return Result.success(showtimesVo);
     }
 
-    @RateLimit(key = "generateShowtimes",time = 60 * 60 * 24,count = 1,msg = "一天只能生成一次场次数据")
+    @RateLimit(key = "generateShowtimes",time = 60 * 60 * 24,count = 1,msg = "一人一天只能生成一次场次数据")
     @PostMapping("/generate-data/{cityId}")
     public Result generateShowtimesData(@PathVariable String cityId) {
         return showtimesService.generateShowtimesData(cityId);

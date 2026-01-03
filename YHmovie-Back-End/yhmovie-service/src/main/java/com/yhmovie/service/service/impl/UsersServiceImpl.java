@@ -177,8 +177,8 @@ public class UsersServiceImpl extends ServiceImpl<UsersMapper, Users> implements
         if(userDto.getUserPassword().length() < 6){
             return Result.error("密码长度不能少于6位");
         }
-        if(userDto.getUserName().length() < 3){
-            return Result.error("用户名长度不能少于4位");
+        if(userDto.getUserName().isEmpty()){
+            return Result.error("用户名不能为空");
         }
         if(! userDto.getUserPassword().equals(userDto.getConfirmPassword())){
             return Result.error("两次输入的密码不一致");

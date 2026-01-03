@@ -406,13 +406,20 @@ onUnmounted(() => {
 /* 电影列表 */
 .movie-list {
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* 
+   修改点：将 1fr 改为 minmax(0, 1fr)
+   原因：在某些浏览器中，如果 Grid Item 内容（如图片）比列宽大，1fr 会被撑开。
+   minmax(0, 1fr) 强制让列宽最小可以是0，从而使得图片严格遵循 Grid 宽度，防止变形。
+  */
+  grid-template-columns: repeat(5, minmax(0, 1fr));
   gap: 30px;
   margin-bottom: 30px;
 }
 
 .movie-card {
   transition: transform 0.3s ease;
+  /* 确保卡片不会溢出 Grid 单元格 */
+  overflow: hidden; 
 }
 
 .movie-card:hover {
@@ -542,14 +549,14 @@ onUnmounted(() => {
 /* 响应式 */
 @media (max-width: 1200px) {
   .movie-list {
-    grid-template-columns: repeat(5, 1fr);
+    grid-template-columns: repeat(5, minmax(0, 1fr));
     gap: 20px;
   }
 }
 
 @media (max-width: 992px) {
   .movie-list {
-    grid-template-columns: repeat(4, 1fr);
+    grid-template-columns: repeat(4, minmax(0, 1fr));
     gap: 20px;
   }
 }
@@ -565,14 +572,14 @@ onUnmounted(() => {
   }
 
   .movie-list {
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(3, minmax(0, 1fr));
     gap: 15px;
   }
 }
 
 @media (max-width: 576px) {
   .movie-list {
-    grid-template-columns: repeat(2, 1fr);
+    grid-template-columns: repeat(2, minmax(0, 1fr));
     gap: 15px;
   }
 

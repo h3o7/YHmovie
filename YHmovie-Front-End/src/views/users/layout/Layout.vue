@@ -15,32 +15,26 @@
 
           <!-- 位置选择器 -->
           <div class="location-selector">
-            <el-popover
-              placement="bottom-start"
-              :width="550"
-              trigger="click"
-              popper-class="city-popover"
-              v-model:visible="cityPopoverVisible"
-            >
+            <el-popover placement="bottom-start" :width="550" trigger="click" popper-class="city-popover"
+              v-model:visible="cityPopoverVisible">
               <template #reference>
                 <div class="current-city" @click="showCityPopover">
                   <span>{{ currentCity }}</span>
-                  <el-icon class="location-icon"><LocationFilled /></el-icon>
+                  <el-icon class="location-icon">
+                    <LocationFilled />
+                  </el-icon>
                 </div>
               </template>
-              
+
               <template #default>
                 <div class="city-selector-container">
                   <!-- 搜索框 -->
                   <div class="city-search">
-                    <el-input
-                      v-model="citySearchQuery"
-                      placeholder="输入城市名称搜索"
-                      clearable
-                      @input="handleCitySearch"
-                    >
+                    <el-input v-model="citySearchQuery" placeholder="输入城市名称搜索" clearable @input="handleCitySearch">
                       <template #prefix>
-                        <el-icon><Search /></el-icon>
+                        <el-icon>
+                          <Search />
+                        </el-icon>
                       </template>
                     </el-input>
                   </div>
@@ -49,12 +43,7 @@
                   <div v-if="showSearchResults && searchResults.length > 0" class="search-results">
                     <div class="results-title">搜索结果</div>
                     <div class="results-list">
-                      <div 
-                        v-for="city in searchResults" 
-                        :key="city.cityId"
-                        class="city-item"
-                        @click="selectCity(city)"
-                      >
+                      <div v-for="city in searchResults" :key="city.cityId" class="city-item" @click="selectCity(city)">
                         {{ city.cityName }}
                       </div>
                     </div>
@@ -69,13 +58,9 @@
                     <div class="province-list">
                       <div class="list-title">选择省份</div>
                       <div class="province-scroll">
-                        <div 
-                          v-for="province in provinces" 
-                          :key="province.provinceId" 
-                          class="province-item"
+                        <div v-for="province in provinces" :key="province.provinceId" class="province-item"
                           :class="{ active: selectedProvinceId === province.provinceId }"
-                          @click="selectProvince(province)"
-                        >
+                          @click="selectProvince(province)">
                           {{ province.provinceName }}
                         </div>
                       </div>
@@ -85,16 +70,13 @@
                     <div class="city-list">
                       <div class="list-title">选择城市</div>
                       <div v-if="loading" class="loading-cities">
-                        <el-icon class="is-loading"><Loading /></el-icon>
+                        <el-icon class="is-loading">
+                          <Loading />
+                        </el-icon>
                         <span>加载中...</span>
                       </div>
                       <div v-else class="city-scroll">
-                        <div 
-                          v-for="city in cities" 
-                          :key="city.cityId" 
-                          class="city-item"
-                          @click="selectCity(city)"
-                        >
+                        <div v-for="city in cities" :key="city.cityId" class="city-item" @click="selectCity(city)">
                           {{ city.cityName }}
                         </div>
                         <div v-if="cities.length === 0" class="no-city">
@@ -108,12 +90,7 @@
                   <div v-if="!showSearchResults" class="hot-cities">
                     <div class="list-title">热门城市</div>
                     <div class="hot-cities-list">
-                      <div 
-                        v-for="city in hotCities" 
-                        :key="city.cityId"
-                        class="hot-city-item"
-                        @click="selectCity(city)"
-                      >
+                      <div v-for="city in hotCities" :key="city.cityId" class="hot-city-item" @click="selectCity(city)">
                         {{ city.cityName }}
                       </div>
                     </div>
@@ -125,12 +102,8 @@
 
           <!-- 主导航 -->
           <nav class="main-nav">
-            <div
-              v-for="item in navItems"
-              :key="item.path"
-              :class="['nav-item', { active: $route.path === item.path }]"
-              @click="navigateTo(item.path)"
-            >
+            <div v-for="item in navItems" :key="item.path" :class="['nav-item', { active: $route.path === item.path }]"
+              @click="navigateTo(item.path)">
               {{ item.name }}
             </div>
           </nav>
@@ -139,25 +112,18 @@
         <!-- 右侧用户中心 -->
         <div class="header-right">
           <div class="search-box">
-            <el-input
-              v-model="searchQuery"
-              placeholder="搜索电影、影院"
-              clearable
-              @keyup.enter="handleSearch"
-            >
+            <el-input v-model="searchQuery" placeholder="搜索电影、影院" clearable @keyup.enter="handleSearch">
               <template #suffix>
-                <el-icon class="search-icon" @click="handleSearch"><Search /></el-icon>
+                <el-icon class="search-icon" @click="handleSearch">
+                  <Search />
+                </el-icon>
               </template>
             </el-input>
           </div>
 
           <el-dropdown trigger="hover" @command="handleUserCommand">
             <div class="user-center">
-              <el-avatar
-                :src="userInfo.userAvatarUrl"
-                :size="40"
-                class="user-avatar"
-              >
+              <el-avatar :src="userInfo.userAvatarUrl" :size="40" class="user-avatar">
                 {{ userInfo.userName ? userInfo.userName.charAt(0) : 'U' }}
               </el-avatar>
               <span class="user-name">{{ userInfo.userName || '用户' }}</span>
@@ -168,15 +134,21 @@
             <template #dropdown>
               <el-dropdown-menu>
                 <el-dropdown-item command="orders">
-                  <el-icon><Tickets /></el-icon>
+                  <el-icon>
+                    <Tickets />
+                  </el-icon>
                   订单信息
                 </el-dropdown-item>
                 <el-dropdown-item command="profile">
-                  <el-icon><User /></el-icon>
+                  <el-icon>
+                    <User />
+                  </el-icon>
                   个人信息
                 </el-dropdown-item>
                 <el-dropdown-item command="logout" divided>
-                  <el-icon><SwitchButton /></el-icon>
+                  <el-icon>
+                    <SwitchButton />
+                  </el-icon>
                   退出登录
                 </el-dropdown-item>
               </el-dropdown-menu>
@@ -190,7 +162,7 @@
     <main class="main-content">
       <router-view />
     </main>
-    
+
     <!-- 页脚 -->
     <footer class="footer">
       <div class="footer-content">
@@ -322,13 +294,13 @@ const loadProvinces = async () => {
   } catch (error) {
     console.error('加载省份异常:', error)
     ElMessage.error('获取省份列表失败')
-  } 
+  }
 }
 
 // 加载城市列表
 const loadCities = async (provinceId) => {
   if (!provinceId) return
-  
+
   try {
     loading.value = true
     const response = await citiesList(provinceId)
@@ -353,7 +325,7 @@ const handleCitySearch = async () => {
     showSearchResults.value = false
     return
   }
-  
+
   try {
     showSearchResults.value = true
     loading.value = true
@@ -382,13 +354,13 @@ const selectCity = async (city) => {
   currentCity.value = city.cityName
   currentCityId.value = city.cityId
   cityPopoverVisible.value = false
-  
+
   // 保存当前城市到本地存储
   localStorage.setItem('currentCity', JSON.stringify({
     cityId: city.cityId,
     cityName: city.cityName
   }))
-  
+
   // 询问是否生成场次数据
   try {
     await ElMessageBox.confirm(
@@ -400,58 +372,73 @@ const selectCity = async (city) => {
         type: 'info',
       }
     )
-    
+
     // 用户点击确定，调用生成接口
     try {
-      // 开启 Loading 服务
+      // 1. 开启 Loading 服务 (防止重复点击)
       const loadingInstance = ElLoading.service({
         lock: true,
-        text: '正在请求生成数据...',
+        text: '正在提交生成任务...', // 文案微调：是“提交任务”不是“生成数据”
         background: 'rgba(0, 0, 0, 0.7)',
       })
 
-      // 请求接口
+      // 2. 请求接口 (现在这个请求会很快返回，通常<1秒)
       const res = await generateShowtimes(city.cityId)
-      
-      // 关闭 Loading
+
+      // 3. 关闭 Loading
       loadingInstance.close()
 
       if (res.code === 200) {
-        // 成功情况
-        ElMessage.success('场次数据生成成功')
-        
-        // 显示2.5分钟等待提示
+        // === 核心修改部分 ===
+
+        // 使用 ElMessageBox 显示后端返回的 res.msg
+        // 并补充说明后台正在运行
+        loadingInstance.close()
+
         ElMessageBox.alert(
-          '数据生成预计需要2分半钟，请稍后刷新页面查看最新场次信息。',
-          '温馨提示',
+          `
+    <div style="text-align: center;">
+      <p style="font-size: 16px; font-weight: bold; color: #303133; margin-bottom: 10px;">
+        ${res.data}
+      </p>
+      <div style="text-align: left; background: #f4f4f5; padding: 10px; border-radius: 4px; color: #606266; font-size: 13px;">
+        <p style="margin: 0;">⏳ 预计耗时：<b>一分钟左右</b></p>
+        <p style="margin: 5px 0 0 0;">💡 温馨提示：数据生成在后台运行，您无需停留在当前页面。</p>
+      </div>
+    </div>
+    `,
+          '提交成功',
           {
-            confirmButtonText: '我知道了',
+            confirmButtonText: '好的，我去看看别的',
+            dangerouslyUseHTMLString: true,
+            customClass: 'my-message-box', // 如果需要进一步写CSS类
             type: 'success',
+            center: true, // Element Plus 自带的居中属性
             callback: () => {
-               // 提示关闭后刷新页面
-               router.go(0)
+              router.go(0)
             }
           }
         )
       } else {
-        // 异常情况（如IP限流），显示后端返回的 msg
-        // 使用 Alert 确保用户看到错误信息后再刷新
+        // 异常情况 (如无影院、限流等)
         ElMessageBox.alert(
-          res.msg || '场次数据生成失败',
+          res.msg || '任务提交失败',
           '提示',
           {
             confirmButtonText: '确定',
             type: 'warning',
             callback: () => {
-              // 即使生成失败，也刷新页面以加载新选择城市的基础数据
               router.go(0)
             }
           }
         )
       }
     } catch (error) {
-      console.error('生成场次数据异常:', error)
-      ElMessage.error('请求生成场次数据失败')
+      console.error('请求异常:', error)
+      ElMessage.error('网络请求失败，请检查连接')
+      // 出错时最好也把 loading 关掉，防止页面卡死
+      const loadingInstance = ElLoading.service()
+      loadingInstance.close()
       router.go(0)
     }
   } catch (e) {
@@ -466,7 +453,7 @@ const showCityPopover = () => {
   // 重置搜索状态
   citySearchQuery.value = ''
   showSearchResults.value = false
-  
+
   // 如果还没有加载过省份数据，加载一次
   if (provinces.value.length === 0) {
     loadProvinces()
@@ -481,12 +468,12 @@ const navigateTo = (path) => {
 // 搜索处理
 const handleSearch = () => {
   if (!searchQuery.value.trim()) return
-  
+
   router.push({
     path: '/users/searchs',
     query: { search: searchQuery.value.trim() }
   })
-  
+
   searchQuery.value = ''
 }
 
@@ -527,7 +514,7 @@ const initialize = () => {
     // 没有保存的城市，设置默认
     setDefaultCity()
   }
-  
+
   // 加载用户信息
   fetchUserInfo()
 }
@@ -782,7 +769,9 @@ onMounted(() => {
   overflow-y: auto;
 }
 
-.no-results, .no-city, .loading-cities {
+.no-results,
+.no-city,
+.loading-cities {
   padding: 20px;
   text-align: center;
   color: #909399;
@@ -984,7 +973,7 @@ onMounted(() => {
   .header-container {
     padding: 0 16px;
   }
-  
+
   .search-box {
     width: 150px;
   }
@@ -994,32 +983,32 @@ onMounted(() => {
   .header-left {
     gap: 12px;
   }
-  
+
   .logo-text {
     font-size: 18px;
   }
-  
+
   .nav-item {
     padding: 0 10px;
     font-size: 14px;
   }
-  
+
   .user-name {
     display: none;
   }
-  
+
   .search-box {
     width: 120px;
   }
-  
+
   .province-city-container {
     grid-template-columns: 1fr;
   }
-  
+
   .province-list {
     height: 150px;
   }
-  
+
   .city-list {
     height: 200px;
   }
@@ -1029,16 +1018,16 @@ onMounted(() => {
   .location-selector {
     margin-right: 12px;
   }
-  
+
   .nav-item {
     padding: 0 6px;
     font-size: 12px;
   }
-  
+
   .search-box {
     width: 100px;
   }
-  
+
   .logo-text {
     font-size: 16px;
   }
